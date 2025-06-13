@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useForm } from "react-hook-form";
-import { login } from "../services/authService";
-import { handleApiError } from "../utils/handleApiError";
+import { login } from "@/services/authService";
+import { handleApiError } from "@/utils/handleApiError";
 import { Truck, Loader2, ShieldAlert } from "lucide-react";
 
 type FormData = {
