@@ -2,20 +2,21 @@ import { useEffect, useState } from "react";
 import { BarChart3 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import apiClient from "@/services/api";
+import { decodeToken } from "@/utils/jwtDecode";
 
 type Trip = {
   id: number;
-  destination: string;
+  destination?: string;
 };
 
 type FreightBill = {
   id: number;
-  company_revenue: number;
+  company_revenue?: number;
 };
 
 type Expense = {
   id: number;
-  value: number;
+  value?: number;
 };
 
 type TopDestination = {
@@ -36,7 +37,7 @@ export default function AdminReports() {
   const [freightBills, setFreightBills] = useState<FreightBill[]>([]);
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [report, setReport] = useState<ReportData | null>(null);
-  const [hasNoFreightBills, setHasNoFreightBills] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -46,28 +47,39 @@ export default function AdminReports() {
     if (!token) return navigate("/");
 
     const fetchAllData = async () => {
-      const userId = 1;
-
       try {
+        const data = decodeToken(token);
+        if (!data?.id) {
+          setErrorMessage("ID do usuário não encontrado no token.");
+          return;
+        }
+
         const [tripsRes, billsRes] = await Promise.all([
-          apiClient.get(`/trip?user_id=${userId}`, {
-            headers: { Authorization: `Bearer ${token}` },
-          }),
-          apiClient.get(`/freightbill?user_id=${userId}`, {
-            headers: { Authorization: `Bearer ${token}` },
-          }),
+          apiClient
+            .get(`/trip?user_id=${data.id}`, {
+              headers: { Authorization: `Bearer ${token}` },
+            })
+            .catch(() => ({ data: [] })),
+          apiClient
+            .get(`/freightbill?user_id=${data.id}`, {
+              headers: { Authorization: `Bearer ${token}` },
+            })
+            .catch((err) => {
+              if (err.response?.status === 204) return { data: [] };
+              throw err;
+            }),
         ]);
 
-        const tripsData = tripsRes.data as Trip[];
-        const freightBillData =
-          billsRes.status === 204 ? [] : (billsRes.data as FreightBill[]);
+        const tripsData = Array.isArray(tripsRes.data) ? tripsRes.data : [];
+        const freightBillData = Array.isArray(billsRes.data)
+          ? billsRes.data
+          : [];
 
         setTrips(tripsData);
         setFreightBills(freightBillData);
 
-        if (freightBillData.length === 0) {
-          setHasNoFreightBills(true);
-          setReport(null); // Evita gerar relatório vazio
+        if (tripsData.length === 0 && freightBillData.length === 0) {
+          setErrorMessage("Nenhum dado encontrado para gerar o relatório.");
           return;
         }
 
@@ -75,6 +87,7 @@ export default function AdminReports() {
         setReport(reportData);
       } catch (error) {
         console.error("Erro ao carregar dados:", error);
+        setErrorMessage("Erro ao carregar os dados.");
       }
     };
 
@@ -86,20 +99,24 @@ export default function AdminReports() {
     freightBills: FreightBill[]
   ): ReportData => {
     const totalTrips = trips.length;
+
     const totalRevenue = freightBills.reduce(
-      (sum, bill) => sum + (bill.company_revenue || 0),
+      (sum, bill) => sum + (bill.company_revenue ?? 0),
       0
     );
+
     const totalExpenses = expenses.reduce(
-      (sum, exp) => sum + (exp.value || 0),
+      (sum, exp) => sum + (exp.value ?? 0),
       0
     );
+
     const profit = totalRevenue - totalExpenses;
 
     const destinationsCount = trips.reduce(
       (acc: Record<string, number>, trip) => {
-        if (!trip.destination) return acc;
-        acc[trip.destination] = (acc[trip.destination] || 0) + 1;
+        const dest = trip.destination?.trim();
+        if (!dest) return acc;
+        acc[dest] = (acc[dest] || 0) + 1;
         return acc;
       },
       {}
@@ -135,11 +152,9 @@ export default function AdminReports() {
           </button>
         </div>
 
-        {hasNoFreightBills ? (
-          <div className="bg-white text-center rounded shadow border p-6">
-            <p className="text-gray-600 text-lg">
-              Nenhuma fatura de frete encontrada.
-            </p>
+        {errorMessage ? (
+          <div className="bg-red-100 border border-red-400 text-red-700 p-4 rounded">
+            {errorMessage}
           </div>
         ) : report ? (
           <div className="bg-white rounded shadow border p-6 space-y-8">
@@ -181,16 +196,17 @@ export default function AdminReports() {
                     </tr>
                   </thead>
                   <tbody>
-                    {report.topDestinations.map((dest, i) => (
-                      <tr
-                        key={i}
-                        className="border-t hover:bg-gray-50 transition-colors"
-                      >
-                        <td className="px-4 py-2">{dest.destination}</td>
-                        <td className="px-4 py-2">{dest.count}</td>
-                      </tr>
-                    ))}
-                    {report.topDestinations.length === 0 && (
+                    {report.topDestinations.length > 0 ? (
+                      report.topDestinations.map((dest, i) => (
+                        <tr
+                          key={i}
+                          className="border-t hover:bg-gray-50 transition-colors"
+                        >
+                          <td className="px-4 py-2">{dest.destination}</td>
+                          <td className="px-4 py-2">{dest.count}</td>
+                        </tr>
+                      ))
+                    ) : (
                       <tr>
                         <td
                           colSpan={2}
