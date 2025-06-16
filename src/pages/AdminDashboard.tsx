@@ -123,15 +123,12 @@ export default function AdminDashboard() {
           </div>
         </section>
 
-        {/* Seção adicional para preencher a página */}
+        {/* Notificações */}
         <section className="max-w-4xl mx-auto bg-white p-6 rounded shadow border">
           <h3 className="text-lg font-semibold mb-3 text-gray-800">
-            Novidades Recentes
+            Notificações
           </h3>
-          <p className="text-gray-700">
-            Aqui você pode adicionar notificações, atualizações do sistema ou
-            outras informações úteis para os administradores.
-          </p>
+          <p className="text-gray-700">Aqui vão ficar as notificações...</p>
         </section>
       </main>
     </div>
