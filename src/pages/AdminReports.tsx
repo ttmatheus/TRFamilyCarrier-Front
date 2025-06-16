@@ -46,31 +46,22 @@ export default function AdminReports() {
 
     const fetchAllData = async () => {
       try {
-        const [tripsRes, billsRes, expensesRes] = await Promise.all([
+        const [tripsRes, billsRes] = await Promise.all([
           apiClient.get("/trip", {
             headers: { Authorization: `Bearer ${token}` },
           }),
           apiClient.get("/freight-bill", {
             headers: { Authorization: `Bearer ${token}` },
           }),
-          apiClient.get("/expenses", {
-            headers: { Authorization: `Bearer ${token}` },
-          }),
         ]);
 
         const tripsData = tripsRes.data as Trip[];
         const freightBillData = billsRes.data as FreightBill[];
-        const expensesData = expensesRes.data as Expense[];
 
         setTrips(tripsData);
         setFreightBills(freightBillData);
-        setExpenses(expensesData);
 
-        const reportData = generateReportData(
-          tripsData,
-          freightBillData,
-          expensesData
-        );
+        const reportData = generateReportData(tripsData, freightBillData);
         setReport(reportData);
       } catch (error) {
         console.error("Erro ao carregar dados:", error);
@@ -82,8 +73,7 @@ export default function AdminReports() {
 
   const generateReportData = (
     trips: Trip[],
-    freightBills: FreightBill[],
-    expenses: Expense[]
+    freightBills: FreightBill[]
   ): ReportData => {
     const totalTrips = trips.length;
     const totalRevenue = freightBills.reduce(
@@ -148,12 +138,6 @@ export default function AdminReports() {
                 <span className="text-gray-600">Receita Total:</span>{" "}
                 <span className="font-medium text-green-600">
                   R$ {report.totalRevenue.toFixed(2)}
-                </span>
-              </div>
-              <div>
-                <span className="text-gray-600">Despesas Totais:</span>{" "}
-                <span className="font-medium text-red-600">
-                  R$ {report.totalExpenses.toFixed(2)}
                 </span>
               </div>
               <div>
