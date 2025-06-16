@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { BarChart3 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import apiClient from "@/services/api";
+import { decodeToken } from "@/utils/jwtDecode";
 
 type Trip = {
   id: number;
@@ -36,7 +37,6 @@ export default function AdminReports() {
   const [freightBills, setFreightBills] = useState<FreightBill[]>([]);
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [report, setReport] = useState<ReportData | null>(null);
-  const [hasNoFreightBills, setHasNoFreightBills] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -46,30 +46,22 @@ export default function AdminReports() {
     if (!token) return navigate("/");
 
     const fetchAllData = async () => {
-      const userId = 1;
-
       try {
+        const data = decodeToken(token);
         const [tripsRes, billsRes] = await Promise.all([
-          apiClient.get(`/trip?user_id=${userId}`, {
+          apiClient.get(`/trip?user_id=${data?.id}`, {
             headers: { Authorization: `Bearer ${token}` },
           }),
-          apiClient.get(`/freightbill?user_id=${userId}`, {
+          apiClient.get(`/freightbill?user_id=${data?.id}`, {
             headers: { Authorization: `Bearer ${token}` },
           }),
         ]);
 
         const tripsData = tripsRes.data as Trip[];
-        const freightBillData =
-          billsRes.status === 204 ? [] : (billsRes.data as FreightBill[]);
+        const freightBillData = billsRes.data as FreightBill[];
 
         setTrips(tripsData);
         setFreightBills(freightBillData);
-
-        if (freightBillData.length === 0) {
-          setHasNoFreightBills(true);
-          setReport(null); // Evita gerar relatório vazio
-          return;
-        }
 
         const reportData = generateReportData(tripsData, freightBillData);
         setReport(reportData);
@@ -135,13 +127,7 @@ export default function AdminReports() {
           </button>
         </div>
 
-        {hasNoFreightBills ? (
-          <div className="bg-white text-center rounded shadow border p-6">
-            <p className="text-gray-600 text-lg">
-              Nenhuma fatura de frete encontrada.
-            </p>
-          </div>
-        ) : report ? (
+        {report ? (
           <div className="bg-white rounded shadow border p-6 space-y-8">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 text-base">
               <div>
