@@ -1,5 +1,5 @@
 import * as React from "react";
-import { cn } from "@/lib/utils";
+import { cn } from "../../lib/utils";
 
 interface TabsProps {
   defaultValue: string;
@@ -11,9 +11,13 @@ export function Tabs({ defaultValue, children }: TabsProps) {
 
   return (
     <div className="tabs">
-      {React.Children.map(children, (child: any) => {
+      {React.Children.map(children, (child) => {
         if (!React.isValidElement(child)) return null;
-        return React.cloneElement(child, { value, setValue });
+
+        return React.cloneElement(child as React.ReactElement<any>, {
+          selectedValue: value,
+          setValue,
+        });
       })}
     </div>
   );
@@ -29,17 +33,18 @@ export function TabsList({ children }: TabsListProps) {
 
 interface TabsTriggerProps {
   value: string;
+  selectedValue?: string;
   setValue?: (value: string) => void;
   children: React.ReactNode;
 }
 
 export function TabsTrigger({
-  value: triggerValue,
+  value,
+  selectedValue,
   setValue,
   children,
-  ...props
 }: TabsTriggerProps) {
-  const isActive = props.value === triggerValue;
+  const isActive = selectedValue === value;
 
   return (
     <button
@@ -49,7 +54,7 @@ export function TabsTrigger({
           ? "border-blue-500 text-blue-600"
           : "border-transparent text-gray-500 hover:text-gray-700"
       )}
-      onClick={() => setValue?.(triggerValue)}
+      onClick={() => setValue?.(value)}
     >
       {children}
     </button>
@@ -58,14 +63,14 @@ export function TabsTrigger({
 
 interface TabsContentProps {
   value: string;
-  setValue?: (value: string) => void;
+  selectedValue?: string;
   children: React.ReactNode;
 }
 
 export function TabsContent({
-  value: contentValue,
+  value,
+  selectedValue,
   children,
-  ...props
 }: TabsContentProps) {
-  return props.value === contentValue ? <div>{children}</div> : null;
+  return selectedValue === value ? <div>{children}</div> : null;
 }

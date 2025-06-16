@@ -1,23 +1,5 @@
-<<<<<<< HEAD
-import api from "./api";
-
-export const authService = {
-  async login(email: string, password: string) {
-    const response = await api.post("/auth/login", { email, password });
-    return response.data;
-  },
-
-  async logout() {
-    await api.post("/auth/logout");
-  },
-
-  async getCurrentUser() {
-    const response = await api.get("/auth/me");
-    return response.data;
-  },
-};
-=======
 import axios from 'axios';
+import apiClient from './api';
 
 type LoginPayload = {
 	email: string,
@@ -25,13 +7,21 @@ type LoginPayload = {
 	rememberMe: boolean,
 };
 
+type responseUser = {
+	email: string,
+	role: string,
+	userId: number,
+	name: string
+}
+
+// Função login exportada isoladamente
 export async function login({
 	email,
 	password,
 	rememberMe,
 }: LoginPayload) {
 	const response = await axios.post(
-		'http://localhost:8080/users/login',
+		'http://localhost:8080/auth/login',
 		{
 			email: email.trim(),
 			password,
@@ -52,4 +42,29 @@ export async function login({
 
 	return user;
 }
->>>>>>> 372e0a21c902030c3c900b62ac0fd76840be718b
+
+// Objeto authService com outros métodos relacionados
+export const authService = {
+	async logout() {
+		sessionStorage.removeItem('authToken');
+		localStorage.removeItem('authToken');
+		window.location.href = '/';
+	},
+
+	async getCurrentUser() {
+		const response = await axios.get(
+			'http://localhost:8080/auth/me'
+		);
+		return response.data;
+	},
+
+	async validateJwt() {
+		const token = sessionStorage.getItem('authToken') || localStorage.getItem('authToken');
+		const user = await apiClient.get('/auth/validateJwt', {
+			headers: {
+				Authorization: `Bearer ${token}`,
+			}
+		})
+		return user.data as responseUser
+	},
+};

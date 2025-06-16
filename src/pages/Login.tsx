@@ -1,8 +1,9 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
-import { login } from "@/services/authService";
+import { authService, login } from "@/services/authService";
 import { handleApiError } from "@/utils/handleApiError";
 import { Truck, Loader2, ShieldAlert } from "lucide-react";
+import { decodeToken } from "@/utils/jwtDecode";
 
 type FormData = {
   email: string;
@@ -33,13 +34,34 @@ export default function Login() {
       const user = await login(data);
 
       window.location.href =
-        user?.role === "admin" ? "/admin/dashboard" : "/dashboard";
+        user.role === "admin" ? "/admin/dashboard" : "/dashboard";
     } catch (err) {
       handleApiError(err, setError, setFocus);
     } finally {
       setIsLoading(false);
     }
   };
+
+  let valid = true;
+  useEffect(() => {
+  const checkAuth = async () => {
+    
+    const token = sessionStorage.getItem("authToken") || localStorage.getItem("authToken");
+    if (token && valid) {
+      try {
+        const user = decodeToken(token);
+        if (user) {
+          window.location.href =
+            user.role === "admin" ? "/admin/dashboard" : "/dashboard";
+        }
+      } catch (error) {
+      }
+      valid = false;
+    }
+  };
+
+  checkAuth();
+}, []);
 
   return (
     <div className="min-h-screen flex flex-col bg-gray-50">

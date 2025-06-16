@@ -1,7 +1,9 @@
 import { Routes, Route } from "react-router-dom";
-import { ProtectedRoute } from "@/components/ProtectedRoute";
-import Login from "@/pages/Login";
-import Dashboard from "@/pages/Dashboard";
+import { ProtectedRoute } from "./components/ProtectedRoute";
+import Login from "./pages/Login";
+import Dashboard from "./pages/Dashboard";
+import AdminDashboard from "./pages/AdminDashboard";
+import AdminUsers from "./pages/AdminUsers";
 
 export default function App() {
   return (
@@ -15,6 +17,16 @@ export default function App() {
           </ProtectedRoute>
         }
       />
+      <Route path="/admin/dashboard" element={
+        <ProtectedRoute role="admin">
+          <AdminDashboard />
+        </ProtectedRoute>
+      }/>
+      <Route path="/admin/users" element={
+        <ProtectedRoute role="admin">
+          <AdminUsers />
+        </ProtectedRoute>
+      }/>
     </Routes>
   );
 }
