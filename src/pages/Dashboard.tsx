@@ -16,7 +16,7 @@ type Trip = {
   date: string;
 };
 
-type FreightBillStatus = "PENDING" | "PAID" | "CANCELLED"; // ajuste conforme seus valores reais
+type FreightBillStatus = "PENDING" | "PAID" | "CANCELLED";
 
 type FreightBill = {
   id: number;
@@ -38,7 +38,9 @@ export default function DriverDashboard() {
 
   useEffect(() => {
     const fetchData = async () => {
-      const token = sessionStorage.getItem("authToken") || localStorage.getItem("authToken");
+      const token =
+        sessionStorage.getItem("authToken") ||
+        localStorage.getItem("authToken");
       if (!token) {
         window.location.href = "/login";
         return;
@@ -52,13 +54,19 @@ export default function DriverDashboard() {
         }
         const userId = data.id;
 
-        const tripsResponse = await apiClient.get<Trip[]>(`/trip?user_id=${userId}`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+        const tripsResponse = await apiClient.get<Trip[]>(
+          `/trip?user_id=${userId}`,
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
 
-        const freightBillsResponse = await apiClient.get<FreightBill[]>(`/freightbill?user_id=${userId}`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+        const freightBillsResponse = await apiClient.get<FreightBill[]>(
+          `/freightbill?user_id=${userId}`,
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
 
         setTrips(tripsResponse.data);
         setFreightBills(freightBillsResponse.data);
@@ -104,7 +112,9 @@ export default function DriverDashboard() {
                     <td className="px-4 py-2">{trip.origin}</td>
                     <td className="px-4 py-2">{trip.destination}</td>
                     <td className="px-4 py-2 capitalize">{trip.status}</td>
-                    <td className="px-4 py-2">{new Date(trip.date).toLocaleDateString()}</td>
+                    <td className="px-4 py-2">
+                      {new Date(trip.date).toLocaleDateString()}
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -114,7 +124,7 @@ export default function DriverDashboard() {
 
         <TabsContent value="freightBills">
           {freightBills.length === 0 ? (
-            <p>Você não possui freight bills registradas.</p>
+            <p>Você não possui cartas-frete registradas.</p>
           ) : (
             <table className="min-w-full text-sm border">
               <thead className="bg-gray-100">
@@ -128,8 +138,12 @@ export default function DriverDashboard() {
                 {freightBills.map((bill) => (
                   <tr key={bill.id} className="border-t hover:bg-gray-50">
                     <td className="px-4 py-2">{bill.initialValue}</td>
-                    <td className="px-4 py-2">R$ {bill.remainingValue.toFixed(2)}</td>
-                    <td className="px-4 py-2 capitalize">{bill.paymentStatus}</td>
+                    <td className="px-4 py-2">
+                      R$ {bill.remainingValue.toFixed(2)}
+                    </td>
+                    <td className="px-4 py-2 capitalize">
+                      {bill.paymentStatus}
+                    </td>
                   </tr>
                 ))}
               </tbody>

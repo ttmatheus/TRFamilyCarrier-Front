@@ -1,50 +1,47 @@
-import { useEffect, useState } from 'react';
-import axios from 'axios';
+import { useEffect, useState } from "react";
+import axios from "axios";
 
-// Isso é só uma definição de tipo, não tente usar como valor depois
 interface User {
-	id: number;
-	name: string;
-	email: string;
-	role: string;
+  id: number;
+  name: string;
+  email: string;
+  role: string;
 }
 
 export function useAuth() {
-	const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<User | null>(null);
 
-	const [isLoading, setIsLoading] = useState(true);
-	const [isAuthenticated, setIsAuthenticated] =
-		useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
 
-	useEffect(() => {
-		const token =
-			localStorage.getItem('authToken') ||
-			sessionStorage.getItem('authToken');
+  useEffect(() => {
+    const token =
+      localStorage.getItem("authToken") || sessionStorage.getItem("authToken");
 
-		if (!token) {
-			setIsLoading(false);
-			setIsAuthenticated(false);
-			return;
-		}
+    if (!token) {
+      setIsLoading(false);
+      setIsAuthenticated(false);
+      return;
+    }
 
-		axios
-			.get('http://localhost:8080/auth/validateJwt', {
-				headers: {
-					Authorization: `Bearer ${token}`,
-				},
-			})
-			.then((res) => {
-				setUser(res.data);
-				setIsAuthenticated(true);
-			})
-			.catch(() => {
-				setUser(null);
-				setIsAuthenticated(false);
-			})
-			.finally(() => {
-				setIsLoading(false);
-			});
-	}, []);
+    axios
+      .get("http://localhost:8080/auth/validateJwt", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      })
+      .then((res) => {
+        setUser(res.data);
+        setIsAuthenticated(true);
+      })
+      .catch(() => {
+        setUser(null);
+        setIsAuthenticated(false);
+      })
+      .finally(() => {
+        setIsLoading(false);
+      });
+  }, []);
 
-	return { user, isLoading, isAuthenticated };
+  return { user, isLoading, isAuthenticated };
 }

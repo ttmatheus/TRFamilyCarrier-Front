@@ -16,21 +16,22 @@ export default function AdminUsers() {
 
   useEffect(() => {
     const fetchUsers = async () => {
-		try {
-			const token = sessionStorage.getItem("authToken") || localStorage.getItem("authToken");
-			if (!token) {
-				navigate("/");
-			}
-			 const mockUsers: User[] = (await apiClient.get("/users", {
-		headers: {
-			Authorization: `Bearer ${token}`,
-		}
-	  })).data as User[]
-      setUsers(mockUsers);
-		} catch(error) {
-			
-		}
-     
+      try {
+        const token =
+          sessionStorage.getItem("authToken") ||
+          localStorage.getItem("authToken");
+        if (!token) {
+          navigate("/");
+        }
+        const mockUsers: User[] = (
+          await apiClient.get("/users", {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          })
+        ).data as User[];
+        setUsers(mockUsers);
+      } catch (error) {}
     };
 
     fetchUsers();
@@ -82,7 +83,10 @@ export default function AdminUsers() {
               ))}
               {users.length === 0 && (
                 <tr>
-                  <td colSpan={4} className="text-center px-4 py-6 text-gray-500">
+                  <td
+                    colSpan={4}
+                    className="text-center px-4 py-6 text-gray-500"
+                  >
                     Nenhum usuário encontrado.
                   </td>
                 </tr>

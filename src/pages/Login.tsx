@@ -44,24 +44,24 @@ export default function Login() {
 
   let valid = true;
   useEffect(() => {
-  const checkAuth = async () => {
-    
-    const token = sessionStorage.getItem("authToken") || localStorage.getItem("authToken");
-    if (token && valid) {
-      try {
-        const user = decodeToken(token);
-        if (user) {
-          window.location.href =
-            user.role === "admin" ? "/admin/dashboard" : "/dashboard";
-        }
-      } catch (error) {
+    const checkAuth = async () => {
+      const token =
+        sessionStorage.getItem("authToken") ||
+        localStorage.getItem("authToken");
+      if (token && valid) {
+        try {
+          const user = decodeToken(token);
+          if (user) {
+            window.location.href =
+              user.role === "admin" ? "/admin/dashboard" : "/dashboard";
+          }
+        } catch (error) {}
+        valid = false;
       }
-      valid = false;
-    }
-  };
+    };
 
-  checkAuth();
-}, []);
+    checkAuth();
+  }, []);
 
   return (
     <div className="min-h-screen flex flex-col bg-gray-50">
@@ -71,17 +71,6 @@ export default function Login() {
             <Truck className="h-8 w-8" />
             <span className="text-xl font-bold">TR Família Transportes</span>
           </div>
-          <nav className="hidden md:flex space-x-6">
-            <a href="#" className="hover:text-blue-200">
-              Sobre Nós
-            </a>
-            <a href="#" className="hover:text-blue-200">
-              Contato
-            </a>
-            <a href="#" className="hover:text-blue-200">
-              Serviços
-            </a>
-          </nav>
         </div>
       </header>
 
@@ -190,10 +179,11 @@ export default function Login() {
                   Lembrar-me
                 </label>
               </div>
-
+              {/* 
               <a href="#" className="text-sm text-blue-600 hover:text-blue-500">
                 Esqueceu a senha?
-              </a>
+              </a> 
+              */}
             </div>
 
             <button
@@ -223,6 +213,88 @@ export default function Login() {
           </div>
         </div>
       </main>
+
+      <section className="mt-20 px-4 max-w-3xl mx-auto space-y-16">
+        {/* Sobre Nós */}
+        <div className="bg-white rounded-2xl shadow-lg p-8 border border-gray-200 hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
+          <h2 className="text-3xl font-bold text-center text-blue-800 mb-4">
+            Sobre Nós
+          </h2>
+          <p className="text-gray-600 leading-relaxed text-base text-center">
+            A{" "}
+            <span className="font-semibold text-blue-800">
+              TR Família Transportes
+            </span>{" "}
+            é uma empresa especializada em transporte rodoviário de cargas,
+            oferecendo soluções logísticas eficientes, seguras e personalizadas.
+            Nossa missão é conectar destinos com qualidade, comprometimento e
+            inovação.
+          </p>
+        </div>
+
+        {/* Serviços */}
+        <div className="bg-white rounded-2xl shadow-lg p-8 border border-gray-200 hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
+          <h2 className="text-3xl font-bold text-center text-blue-800 mb-8">
+            Nossos Serviços
+          </h2>
+          <div className="space-y-6">
+            <div className="p-6 bg-gray-50 rounded-lg shadow-md hover:shadow-lg hover:scale-[1.01] transition-all duration-300">
+              <h3 className="text-lg font-semibold text-gray-800 mb-1">
+                🚛 Transporte Rodoviário Nacional
+              </h3>
+              <p className="text-gray-600 text-sm">
+                Realizamos entregas por todo o território nacional com rapidez,
+                segurança e rastreabilidade.
+              </p>
+            </div>
+            <div className="p-6 bg-gray-50 rounded-lg shadow-md hover:shadow-lg hover:scale-[1.01] transition-all duration-300">
+              <h3 className="text-lg font-semibold text-gray-800 mb-1">
+                📦 Logística e Armazenamento
+              </h3>
+              <p className="text-gray-600 text-sm">
+                Gerenciamos todo o ciclo de armazenagem com estrutura adequada e
+                controle inteligente de estoque.
+              </p>
+            </div>
+            <div className="p-6 bg-gray-50 rounded-lg shadow-md hover:shadow-lg hover:scale-[1.01] transition-all duration-300">
+              <h3 className="text-lg font-semibold text-gray-800 mb-1">
+                🧾 Gestão de Entregas e Frotas
+              </h3>
+              <p className="text-gray-600 text-sm">
+                Otimização de rotas e monitoramento da frota para maior controle
+                e desempenho operacional.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Contato */}
+        <div className="bg-white rounded-2xl shadow-lg p-8 border border-gray-200 hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
+          <h2 className="text-3xl font-bold text-center text-blue-800 mb-4">
+            Fale Conosco
+          </h2>
+          <p className="text-gray-600 text-center text-base">
+            E-mail:{" "}
+            <a
+              href="mailto:contato@trfamilycarrier.com"
+              className="text-blue-600 hover:underline"
+            >
+              contato@trfamilycarrier.com
+            </a>
+          </p>
+          <p className="text-gray-600 text-center mt-2 text-base">
+            WhatsApp:{" "}
+            <a
+              href="https://wa.me/5584999999999"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-blue-600 hover:underline"
+            >
+              (84) 99999-9999
+            </a>
+          </p>
+        </div>
+      </section>
 
       <footer className="bg-gray-100 p-4 text-center text-sm text-gray-600">
         © {new Date().getFullYear()} TR Família Transportes. Todos os direitos
