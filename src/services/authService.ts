@@ -9,7 +9,7 @@ type LoginPayload = {
 
 type responseUser = {
   email: string;
-  role: string;
+  userType: string;
   userId: number;
   name: string;
 };

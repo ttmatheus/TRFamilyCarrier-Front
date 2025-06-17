@@ -5,7 +5,7 @@ interface User {
   id: number;
   name: string;
   email: string;
-  role: string;
+  userType: string;
 }
 
 export function useAuth() {

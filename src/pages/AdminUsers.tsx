@@ -17,7 +17,7 @@ type UserType = {
   id: string;
   name: string;
   email: string;
-  role: "admin" | "driver";
+  userType: "admin" | "driver";
   active: boolean;
   lastLogin?: string;
   createdAt: string;
@@ -54,7 +54,7 @@ export default function AdminUsers() {
   const [editForm, setEditForm] = useState({
     name: "",
     email: "",
-    role: "" as "admin" | "driver" | "",
+    userType: "" as "admin" | "driver" | "",
     licenseNumber: "",
     licenseExpiration: "",
     phoneNumber: "",
@@ -66,7 +66,7 @@ export default function AdminUsers() {
     name: "",
     email: "",
     password: "",
-    role: "driver" as "admin" | "driver",
+    userType: "driver" as "admin" | "driver",
     licenseNumber: "",
     licenseExpiration: "",
     phoneNumber: "",
@@ -84,6 +84,7 @@ export default function AdminUsers() {
       const res = await apiClient.get("/users", {
         headers: { Authorization: `Bearer ${token}` },
       });
+      console.log(res.data as UserType[]);
       setUsers(res.data as UserType[]);
     } catch (error) {
       console.error("Erro ao buscar usuários:", error);
@@ -95,10 +96,13 @@ export default function AdminUsers() {
       const token =
         sessionStorage.getItem("authToken") ||
         localStorage.getItem("authToken");
-      const res = await apiClient.get("/truck", {
+
+      const res = await apiClient.get("/truck/trucks", {
         headers: { Authorization: `Bearer ${token}` },
       });
       setTrucks(res.data as TruckType[]);
+
+      console.log(res.data as TruckType[]);
     } catch (error) {
       console.error("Erro ao buscar caminhões:", error);
     }
@@ -136,7 +140,7 @@ export default function AdminUsers() {
       }
 
       if (
-        createForm.role === "driver" &&
+        createForm.userType === "driver" &&
         (!createForm.licenseNumber || !createForm.licenseExpiration)
       ) {
         alert("Para motoristas, preencha os dados da CNH");
@@ -152,8 +156,8 @@ export default function AdminUsers() {
         name: createForm.name,
         email: createForm.email,
         password: createForm.password,
-        role: createForm.role,
-        ...(createForm.role === "driver" && {
+        userType: createForm.userType,
+        ...(createForm.userType === "driver" && {
           driverInfo: {
             licenseNumber: createForm.licenseNumber,
             licenseExpiration: createForm.licenseExpiration,
@@ -175,7 +179,7 @@ export default function AdminUsers() {
           name: "",
           email: "",
           password: "",
-          role: "driver",
+          userType: "driver",
           licenseNumber: "",
           licenseExpiration: "",
           phoneNumber: "",
@@ -206,7 +210,7 @@ export default function AdminUsers() {
     setEditForm({
       name: user.name,
       email: user.email,
-      role: user.role,
+      userType: user.userType,
       licenseNumber: user.driverInfo?.licenseNumber || "",
       licenseExpiration: user.driverInfo?.licenseExpiration || "",
       phoneNumber: user.driverInfo?.phoneNumber || "",
@@ -223,7 +227,7 @@ export default function AdminUsers() {
     setEditForm({
       name: "",
       email: "",
-      role: "" as "admin" | "driver" | "",
+      userType: "" as "admin" | "driver" | "",
       licenseNumber: "",
       licenseExpiration: "",
       phoneNumber: "",
@@ -257,11 +261,11 @@ export default function AdminUsers() {
       const updatedUserData: any = {
         name: editForm.name,
         email: editForm.email,
-        role: editForm.role,
+        userType: editForm.userType,
         active: editForm.active,
       };
 
-      if (editForm.role === "driver") {
+      if (editForm.userType === "driver") {
         updatedUserData.driverInfo = {
           licenseNumber: editForm.licenseNumber,
           licenseExpiration: editForm.licenseExpiration,
@@ -295,7 +299,7 @@ export default function AdminUsers() {
             }
             if (Object.keys(filteredDriverInfo).length > 0) {
               payload.driverInfo = filteredDriverInfo;
-            } else if (updatedUserData.role === "admin") {
+            } else if (updatedUserData.userType === "admin") {
               payload.driverInfo = null;
             }
           } else {
@@ -305,7 +309,7 @@ export default function AdminUsers() {
       }
 
       if (
-        payload.role === "driver" &&
+        payload.userType === "driver" &&
         (!payload.driverInfo ||
           !payload.driverInfo.licenseNumber ||
           !payload.driverInfo.licenseExpiration)
@@ -374,7 +378,6 @@ export default function AdminUsers() {
           </button>
         </div>
 
-        {/* Formulário de Criação de Usuário */}
         {showCreateForm && (
           <div className="bg-white p-6 rounded-xl shadow-sm border border-green-100 mb-6">
             <h2 className="text-lg font-semibold mb-4 text-gray-800">
@@ -427,11 +430,11 @@ export default function AdminUsers() {
                 </label>
                 <select
                   className="w-full border border-gray-300 p-2 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
-                  value={createForm.role}
+                  value={createForm.userType}
                   onChange={(e) =>
                     setCreateForm({
                       ...createForm,
-                      role: e.target.value as "admin" | "driver",
+                      userType: e.target.value as "admin" | "driver",
                     })
                   }
                 >
@@ -441,7 +444,7 @@ export default function AdminUsers() {
               </div>
             </div>
 
-            {createForm.role === "driver" && (
+            {createForm.userType === "driver" && (
               <div className="mt-4 border-t pt-4">
                 <h3 className="text-md font-semibold mb-3 text-gray-800 flex items-center">
                   <Truck className="w-5 h-5 mr-2 text-orange-600" />
@@ -577,8 +580,8 @@ export default function AdminUsers() {
                 </label>
                 <select
                   className="w-full border border-gray-300 p-2 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
-                  name="role"
-                  value={editForm.role}
+                  name="userType"
+                  value={editForm.userType}
                   onChange={handleEditInputChange}
                 >
                   <option value="driver">Motorista</option>
@@ -602,7 +605,7 @@ export default function AdminUsers() {
               </div>
             </div>
 
-            {editForm.role === "driver" && (
+            {editForm.userType === "driver" && (
               <div className="mt-4 border-t pt-4">
                 <h3 className="text-md font-semibold mb-3 text-gray-800 flex items-center">
                   <Truck className="w-5 h-5 mr-2 text-orange-600" />
@@ -720,7 +723,9 @@ export default function AdminUsers() {
                       </div>
                     </td>
                     <td className="px-6 py-4 capitalize">
-                      {user.role === "admin" ? "Administrador" : "Motorista"}
+                      {user.userType === "admin"
+                        ? "Administrador"
+                        : "Motorista"}
                     </td>
                     <td className="px-6 py-4">
                       <span

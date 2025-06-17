@@ -26,7 +26,7 @@ export default function App() {
       <Route
         path="/admin/dashboard"
         element={
-          <ProtectedRoute role="admin">
+          <ProtectedRoute userType="admin">
             <AdminDashboard />
           </ProtectedRoute>
         }
@@ -34,7 +34,7 @@ export default function App() {
       <Route
         path="/admin/users"
         element={
-          <ProtectedRoute role="admin">
+          <ProtectedRoute userType="admin">
             <AdminUsers />
           </ProtectedRoute>
         }
@@ -42,7 +42,7 @@ export default function App() {
       <Route
         path="/admin/trips"
         element={
-          <ProtectedRoute role="admin">
+          <ProtectedRoute userType="admin">
             <AdminTrips />
           </ProtectedRoute>
         }
@@ -50,7 +50,7 @@ export default function App() {
       <Route
         path="/admin/trucks"
         element={
-          <ProtectedRoute role="admin">
+          <ProtectedRoute userType="admin">
             <AdminTrucks />
           </ProtectedRoute>
         }
@@ -58,7 +58,7 @@ export default function App() {
       <Route
         path="/admin/reports"
         element={
-          <ProtectedRoute role="admin">
+          <ProtectedRoute userType="admin">
             <AdminReports />
           </ProtectedRoute>
         }
@@ -66,7 +66,7 @@ export default function App() {
       <Route
         path="/admin/freights"
         element={
-          <ProtectedRoute role="admin">
+          <ProtectedRoute userType="admin">
             <AdminFreightBills />
           </ProtectedRoute>
         }
@@ -74,7 +74,7 @@ export default function App() {
       <Route
         path="/admin/maintenance"
         element={
-          <ProtectedRoute role="admin">
+          <ProtectedRoute userType="admin">
             <AdminMaintenance />
           </ProtectedRoute>
         }

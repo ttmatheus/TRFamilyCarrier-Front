@@ -22,14 +22,14 @@ type Trip = {
   origin: string;
   destination: string;
   status: string;
-  departure_time: string;
-  arrival_time: string;
-  receiver_name: string;
-  receiver_document: string;
-  cargo_description: string;
-  cargo_weight: number;
-  driver_id?: number;
-  truck_id?: number;
+  departureTime: string;
+  arrivalTime: string;
+  receiverName: string;
+  receiverDocument: string;
+  cargoDescription: string;
+  cargoWeight: number;
+  driverId?: number;
+  truckId?: number;
   driver?: {
     name: string;
   };
@@ -92,8 +92,8 @@ export default function AdminTrips() {
     ];
 
     return requiredFields.every((field) => {
-      if (typeof field === 'string') return field.trim() !== '';
-      if (typeof field === 'number') return field > 0;
+      if (typeof field === "string") return field.trim() !== "";
+      if (typeof field === "number") return field > 0;
       return !!field;
     });
   };
@@ -460,13 +460,13 @@ export default function AdminTrips() {
                         </div>
                       </td>
                       <td className="px-6 py-4">
-                        <div className="font-medium">{trip.receiver_name}</div>
+                        <div className="font-medium">{trip.receiverName}</div>
                         <div className="text-xs text-gray-500 mt-1">
-                          {trip.receiver_document}
+                          {trip.receiverDocument}
                         </div>
                       </td>
                       <td className="px-6 py-4">
-                        {new Date(trip.departure_time).toLocaleDateString(
+                        {new Date(trip.departureTime).toLocaleDateString(
                           "pt-BR",
                           {
                             day: "2-digit",
@@ -510,11 +510,11 @@ export default function AdminTrips() {
                                   <span className="font-medium">
                                     Descrição:
                                   </span>{" "}
-                                  {trip.cargo_description}
+                                  {trip.cargoDescription}
                                 </p>
                                 <p>
                                   <span className="font-medium">Peso:</span>{" "}
-                                  {trip.cargo_weight} kg
+                                  {trip.cargoWeight} kg
                                 </p>
                               </div>
                             </div>
@@ -547,16 +547,16 @@ export default function AdminTrips() {
                                 <p>
                                   <span className="font-medium">Partida:</span>{" "}
                                   {new Date(
-                                    trip.departure_time
+                                    trip.departureTime
                                   ).toLocaleString()}
                                 </p>
-                                {trip.arrival_time && (
+                                {trip.arrivalTime && (
                                   <p>
                                     <span className="font-medium">
                                       Chegada:
                                     </span>{" "}
                                     {new Date(
-                                      trip.arrival_time
+                                      trip.arrivalTime
                                     ).toLocaleString()}
                                   </p>
                                 )}

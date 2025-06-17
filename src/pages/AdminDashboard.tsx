@@ -17,7 +17,7 @@ import { decodeToken } from "@/utils/jwtDecode";
 type User = {
   name: string;
   email: string;
-  role: string;
+  userType: string;
   id: number;
 };
 
@@ -35,7 +35,7 @@ export default function AdminDashboard() {
         return;
       }
       const data = decodeToken(token);
-      if (!data || data.role !== "admin") {
+      if (!data || data.userType !== "admin") {
         navigate("/dashboard");
       } else {
         setUser(data);

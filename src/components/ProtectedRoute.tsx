@@ -4,10 +4,10 @@ import React from "react";
 
 type Props = {
   children: React.ReactNode;
-  role?: string;
+  userType?: string;
 };
 
-export function ProtectedRoute({ children, role }: Props) {
+export function ProtectedRoute({ children, userType }: Props) {
   const { user, isLoading, isAuthenticated } = useAuth();
 
   if (isLoading) {
@@ -18,7 +18,7 @@ export function ProtectedRoute({ children, role }: Props) {
     return <Navigate to="/" replace />;
   }
 
-  if (role && user?.role !== role) {
+  if (userType && user?.userType !== userType) {
     return <div className="p-4 text-center text-red-500">Acesso negado</div>;
   }
 

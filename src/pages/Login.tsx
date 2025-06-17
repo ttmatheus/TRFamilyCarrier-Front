@@ -34,7 +34,7 @@ export default function Login() {
       const user = await login(data);
 
       window.location.href =
-        user.role === "admin" ? "/admin/dashboard" : "/dashboard";
+        user.userType === "admin" ? "/admin/dashboard" : "/dashboard";
     } catch (err) {
       handleApiError(err, setError, setFocus);
     } finally {
@@ -53,7 +53,7 @@ export default function Login() {
           const user = decodeToken(token);
           if (user) {
             window.location.href =
-              user.role === "admin" ? "/admin/dashboard" : "/dashboard";
+              user.userType === "admin" ? "/admin/dashboard" : "/dashboard";
           }
         } catch (error) {}
         valid = false;
