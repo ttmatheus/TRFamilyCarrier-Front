@@ -16,20 +16,20 @@ import "react-datepicker/dist/react-datepicker.css";
 
 type FreightBill = {
   id: number;
-  trip_id: number;
-  initial_value: number;
-  remaining_value: number;
-  truck_expenses_total: number;
-  trip_expenses_total: number;
-  driver_payment_value: number;
-  company_revenue: number;
-  payment_status: "pending" | "partial" | "paid";
+  tripId: number;
+  initialValue: number;
+  remainingValue: number;
+  truckExpensesTotal: number;
+  tripExpensesTotal: number;
+  driverPaymentValue: number;
+  companyRevenue: number;
+  paymentStatus: "pending" | "partial" | "paid";
   notes: string;
-  created_at: string;
+  createdAt: string;
   trip?: {
     origin: string;
     destination: string;
-    departure_time: string;
+    departureTime: string;
     driver?: {
       name: string;
     };
@@ -40,7 +40,7 @@ type Trip = {
   id: number;
   origin: string;
   destination: string;
-  departure_time: string;
+  departureTime: string;
   driver?: {
     name: string;
   };
@@ -56,12 +56,12 @@ export default function AdminFreightBills() {
 
   // Form state
   const [form, setForm] = useState({
-    trip_id: "",
-    initial_value: 0,
-    truck_expenses_total: 0,
-    trip_expenses_total: 0,
-    driver_payment_value: 0,
-    payment_status: "pending" as "pending" | "partial" | "paid",
+    tripId: "",
+    initialValue: 0,
+    truckExpensesTotal: 0,
+    tripExpensesTotal: 0,
+    driverPaymentValue: 0,
+    paymentStatus: "pending" as "pending" | "partial" | "paid",
     notes: "",
   });
 
@@ -100,20 +100,20 @@ export default function AdminFreightBills() {
         localStorage.getItem("authToken");
       if (!token) return;
 
-      if (!form.trip_id) {
+      if (!form.tripId) {
         alert("Selecione uma viagem para associar a carta de frete");
         return;
       }
 
       const freightBillData = {
         ...form,
-        trip_id: parseInt(form.trip_id),
-        remaining_value: form.initial_value,
-        company_revenue:
-          form.initial_value -
-          form.driver_payment_value -
-          form.truck_expenses_total -
-          form.trip_expenses_total,
+        tripId: parseInt(form.tripId),
+        remainingValue: form.initialValue,
+        companyRevenue:
+          form.initialValue -
+          form.driverPaymentValue -
+          form.truckExpensesTotal -
+          form.tripExpensesTotal,
       };
 
       await apiClient.post("/freightbill/create", freightBillData, {
@@ -156,12 +156,12 @@ export default function AdminFreightBills() {
 
   const resetForm = () => {
     setForm({
-      trip_id: "",
-      initial_value: 0,
-      truck_expenses_total: 0,
-      trip_expenses_total: 0,
-      driver_payment_value: 0,
-      payment_status: "pending",
+      tripId: "",
+      initialValue: 0,
+      truckExpensesTotal: 0,
+      tripExpensesTotal: 0,
+      driverPaymentValue: 0,
+      paymentStatus: "pending",
       notes: "",
     });
   };
@@ -251,16 +251,16 @@ export default function AdminFreightBills() {
                 </label>
                 <select
                   className="w-full border border-gray-300 p-2 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
-                  value={form.trip_id}
+                  value={form.tripId}
                   onChange={(e) =>
-                    setForm({ ...form, trip_id: e.target.value })
+                    setForm({ ...form, tripId: e.target.value })
                   }
                 >
                   <option value="">Selecione uma viagem</option>
                   {trips.map((trip) => (
                     <option key={trip.id} value={trip.id}>
                       {trip.origin} → {trip.destination} (
-                      {new Date(trip.departure_time).toLocaleDateString()})
+                      {new Date(trip.departureTime).toLocaleDateString()})
                     </option>
                   ))}
                 </select>
@@ -275,11 +275,11 @@ export default function AdminFreightBills() {
                   type="number"
                   min="0"
                   step="0.01"
-                  value={form.initial_value}
+                  value={form.initialValue}
                   onChange={(e) =>
                     setForm({
                       ...form,
-                      initial_value: parseFloat(e.target.value) || 0,
+                      initialValue: parseFloat(e.target.value) || 0,
                     })
                   }
                 />
@@ -291,9 +291,9 @@ export default function AdminFreightBills() {
                 </label>
                 <select
                   className="w-full border border-gray-300 p-2 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
-                  value={form.payment_status}
+                  value={form.paymentStatus}
                   onChange={(e) =>
-                    setForm({ ...form, payment_status: e.target.value as any })
+                    setForm({ ...form, paymentStatus: e.target.value as any })
                   }
                 >
                   <option value="pending">Pendente</option>
@@ -311,11 +311,11 @@ export default function AdminFreightBills() {
                   type="number"
                   min="0"
                   step="0.01"
-                  value={form.truck_expenses_total}
+                  value={form.truckExpensesTotal}
                   onChange={(e) =>
                     setForm({
                       ...form,
-                      truck_expenses_total: parseFloat(e.target.value) || 0,
+                      truckExpensesTotal: parseFloat(e.target.value) || 0,
                     })
                   }
                 />
@@ -330,11 +330,11 @@ export default function AdminFreightBills() {
                   type="number"
                   min="0"
                   step="0.01"
-                  value={form.trip_expenses_total}
+                  value={form.tripExpensesTotal}
                   onChange={(e) =>
                     setForm({
                       ...form,
-                      trip_expenses_total: parseFloat(e.target.value) || 0,
+                      tripExpensesTotal: parseFloat(e.target.value) || 0,
                     })
                   }
                 />
@@ -349,11 +349,11 @@ export default function AdminFreightBills() {
                   type="number"
                   min="0"
                   step="0.01"
-                  value={form.driver_payment_value}
+                  value={form.driverPaymentValue}
                   onChange={(e) =>
                     setForm({
                       ...form,
-                      driver_payment_value: parseFloat(e.target.value) || 0,
+                      driverPaymentValue: parseFloat(e.target.value) || 0,
                     })
                   }
                 />
@@ -380,16 +380,16 @@ export default function AdminFreightBills() {
                   <div>
                     <div className="text-gray-600">Valor Total:</div>
                     <div className="font-medium">
-                      {formatCurrency(form.initial_value)}
+                      {formatCurrency(form.initialValue)}
                     </div>
                   </div>
                   <div>
                     <div className="text-gray-600">Total Despesas:</div>
                     <div className="font-medium text-red-600">
                       {formatCurrency(
-                        form.truck_expenses_total +
-                          form.trip_expenses_total +
-                          form.driver_payment_value
+                        form.truckExpensesTotal +
+                          form.tripExpensesTotal +
+                          form.driverPaymentValue
                       )}
                     </div>
                   </div>
@@ -397,20 +397,20 @@ export default function AdminFreightBills() {
                     <div className="text-gray-600">Lucro da Empresa:</div>
                     <div
                       className={`font-medium ${
-                        form.initial_value -
-                          form.truck_expenses_total -
-                          form.trip_expenses_total -
-                          form.driver_payment_value >=
+                        form.initialValue -
+                          form.truckExpensesTotal -
+                          form.tripExpensesTotal -
+                          form.driverPaymentValue >=
                         0
                           ? "text-green-600"
                           : "text-red-600"
                       }`}
                     >
                       {formatCurrency(
-                        form.initial_value -
-                          form.truck_expenses_total -
-                          form.trip_expenses_total -
-                          form.driver_payment_value
+                        form.initialValue -
+                          form.truckExpensesTotal -
+                          form.tripExpensesTotal -
+                          form.driverPaymentValue
                       )}
                     </div>
                   </div>
@@ -471,13 +471,13 @@ export default function AdminFreightBills() {
                         )}
                       </td>
                       <td className="px-6 py-4 font-medium">
-                        {formatCurrency(freightBill.initial_value)}
+                        {formatCurrency(freightBill.initialValue)}
                       </td>
                       <td className="px-6 py-4">
-                        {getPaymentStatusBadge(freightBill.payment_status)}
+                        {getPaymentStatusBadge(freightBill.paymentStatus)}
                       </td>
                       <td className="px-6 py-4">
-                        {new Date(freightBill.created_at).toLocaleDateString()}
+                        {new Date(freightBill.createdAt).toLocaleDateString()}
                       </td>
                       <td className="px-6 py-4">
                         <button
@@ -509,20 +509,20 @@ export default function AdminFreightBills() {
                                   <span className="font-medium">
                                     Valor Inicial:
                                   </span>{" "}
-                                  {formatCurrency(freightBill.initial_value)}
+                                  {formatCurrency(freightBill.initialValue)}
                                 </p>
                                 <p>
                                   <span className="font-medium">
                                     Valor Restante:
                                   </span>{" "}
-                                  {formatCurrency(freightBill.remaining_value)}
+                                  {formatCurrency(freightBill.remainingValue)}
                                 </p>
                                 <p>
                                   <span className="font-medium">
                                     Pagamento Motorista:
                                   </span>{" "}
                                   {formatCurrency(
-                                    freightBill.driver_payment_value
+                                    freightBill.driverPaymentValue
                                   )}
                                 </p>
                               </div>
@@ -537,13 +537,13 @@ export default function AdminFreightBills() {
                                 <p>
                                   <span className="font-medium">Caminhão:</span>{" "}
                                   {formatCurrency(
-                                    freightBill.truck_expenses_total
+                                    freightBill.truckExpensesTotal
                                   )}
                                 </p>
                                 <p>
                                   <span className="font-medium">Viagem:</span>{" "}
                                   {formatCurrency(
-                                    freightBill.trip_expenses_total
+                                    freightBill.tripExpensesTotal
                                   )}
                                 </p>
                                 <p>
@@ -551,8 +551,8 @@ export default function AdminFreightBills() {
                                     Total Despesas:
                                   </span>{" "}
                                   {formatCurrency(
-                                    freightBill.truck_expenses_total +
-                                      freightBill.trip_expenses_total
+                                    freightBill.truckExpensesTotal +
+                                      freightBill.tripExpensesTotal
                                   )}
                                 </p>
                               </div>
@@ -568,14 +568,14 @@ export default function AdminFreightBills() {
                                   <span className="font-medium">
                                     Receita da Empresa:
                                   </span>{" "}
-                                  {formatCurrency(freightBill.company_revenue)}
+                                  {formatCurrency(freightBill.companyRevenue)}
                                 </p>
                                 <p>
                                   <span className="font-medium">Margem:</span>{" "}
-                                  {freightBill.initial_value
+                                  {freightBill.initialValue
                                     ? `${(
-                                        (freightBill.company_revenue /
-                                          freightBill.initial_value) *
+                                        (freightBill.companyRevenue /
+                                          freightBill.initialValue) *
                                         100
                                       ).toFixed(2)}%`
                                     : "0%"}

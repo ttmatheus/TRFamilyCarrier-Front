@@ -71,14 +71,14 @@ export default function AdminReports() {
   origin: string;
   destination: string;
   status: string;
-  departure_time: string;
+  departureTime: string;
   arrival_time: string;
   receiver_name: string;
   receiver_document: string;
   cargo_description: string;
   cargo_weight: number;
   driver_id?: number;
-  truck_id?: number;
+  truckId?: number;
   driver?: {
     name: string;
   };
@@ -170,7 +170,7 @@ export default function AdminReports() {
         (trip) => ({
           id: trip.id,
           destination: trip.destination,
-          departureTime: trip.departure_time,
+          departureTime: trip.departureTime,
           status: trip.status,
           cargoWeight: trip.cargo_weight,
           origin: trip.origin,

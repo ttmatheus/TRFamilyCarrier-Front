@@ -17,17 +17,17 @@ import "react-datepicker/dist/react-datepicker.css";
 
 type Maintenance = {
   id: number;
-  truck_id: number;
-  maintenance_type: string;
+  truckId: number;
+  maintenanceType: string;
   description: string;
   cost: number;
   mileage: number;
-  maintenance_date: string;
-  next_maintenance_date: string;
-  service_provider: string;
-  receipt_url: string;
+  maintenanceDate: string;
+  nextMaintenanceDate: string;
+  serviceProvider: string;
+  receiptUrl: string;
   truck?: {
-    license_plate: string;
+    licensePlate: string;
     brand: string;
     model: string;
   };
@@ -35,7 +35,7 @@ type Maintenance = {
 
 type Truck = {
   id: number;
-  license_plate: string;
+  licensePlate: string;
   brand: string;
   model: string;
 };
@@ -49,15 +49,15 @@ export default function AdminMaintenance() {
   const navigate = useNavigate();
 
   const [form, setForm] = useState({
-    truck_id: "",
-    maintenance_type: "preventive",
+    truckId: "",
+    maintenanceType: "preventive",
     description: "",
     cost: 0,
     mileage: 0,
-    maintenance_date: null as Date | null,
-    next_maintenance_date: null as Date | null,
-    service_provider: "",
-    receipt_url: "",
+    maintenanceDate: null as Date | null,
+    nextMaintenanceDate: null as Date | null,
+    serviceProvider: "",
+    receiptUrl: "",
   });
 
   const fetchData = async () => {
@@ -68,10 +68,10 @@ export default function AdminMaintenance() {
       if (!token) return navigate("/");
 
       const [maintenancesRes, trucksRes] = await Promise.all([
-        apiClient.get("/maintenance", {
+        apiClient.get("/maintenance-records", {
           headers: { Authorization: `Bearer ${token}` },
         }),
-        apiClient.get("/truck", {
+        apiClient.get("/truck/trucks", {
           headers: { Authorization: `Bearer ${token}` },
         }),
       ]);
@@ -92,19 +92,19 @@ export default function AdminMaintenance() {
         localStorage.getItem("authToken");
       if (!token) return;
 
-      if (!form.truck_id || !form.maintenance_date) {
+      if (!form.truckId || !form.maintenanceDate) {
         alert("Selecione um caminhão e a data da manutenção");
         return;
       }
 
       const maintenanceData = {
         ...form,
-        truck_id: parseInt(form.truck_id),
-        maintenance_date: form.maintenance_date.toISOString(),
-        next_maintenance_date: form.next_maintenance_date?.toISOString(),
+        truckId: parseInt(form.truckId),
+        maintenanceDate: form.maintenanceDate.toISOString(),
+        nextMaintenanceDate: form.nextMaintenanceDate?.toISOString(),
       };
 
-      await apiClient.post("/maintenance/create", maintenanceData, {
+      await apiClient.post("/maintenance-records", maintenanceData, {
         headers: { Authorization: `Bearer ${token}` },
       });
 
@@ -129,7 +129,7 @@ export default function AdminMaintenance() {
       const token =
         sessionStorage.getItem("authToken") ||
         localStorage.getItem("authToken");
-      await apiClient.delete(`/maintenance/${id}`, {
+      await apiClient.delete(`/maintenance-records/${id}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
 
@@ -142,15 +142,15 @@ export default function AdminMaintenance() {
 
   const resetForm = () => {
     setForm({
-      truck_id: "",
-      maintenance_type: "preventive",
+      truckId: "",
+      maintenanceType: "preventive",
       description: "",
       cost: 0,
       mileage: 0,
-      maintenance_date: null,
-      next_maintenance_date: null,
-      service_provider: "",
-      receipt_url: "",
+      maintenanceDate: null,
+      nextMaintenanceDate: null,
+      serviceProvider: "",
+      receiptUrl: "",
     });
   };
 
@@ -230,15 +230,15 @@ export default function AdminMaintenance() {
                 </label>
                 <select
                   className="w-full border border-gray-300 p-2 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
-                  value={form.truck_id}
+                  value={form.truckId}
                   onChange={(e) =>
-                    setForm({ ...form, truck_id: e.target.value })
+                    setForm({ ...form, truckId: e.target.value })
                   }
                 >
                   <option value="">Selecione um caminhão</option>
                   {trucks.map((truck) => (
                     <option key={truck.id} value={truck.id}>
-                      {truck.license_plate} - {truck.brand} {truck.model}
+                      {truck.licensePlate} - {truck.brand} {truck.model}
                     </option>
                   ))}
                 </select>
@@ -250,9 +250,9 @@ export default function AdminMaintenance() {
                 </label>
                 <select
                   className="w-full border border-gray-300 p-2 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
-                  value={form.maintenance_type}
+                  value={form.maintenanceType}
                   onChange={(e) =>
-                    setForm({ ...form, maintenance_type: e.target.value })
+                    setForm({ ...form, maintenanceType: e.target.value })
                   }
                 >
                   <option value="preventive">Preventiva</option>
@@ -267,9 +267,9 @@ export default function AdminMaintenance() {
                   Data da Manutenção *
                 </label>
                 <DatePicker
-                  selected={form.maintenance_date}
+                  selected={form.maintenanceDate}
                   onChange={(date: Date | null) =>
-                    setForm({ ...form, maintenance_date: date })
+                    setForm({ ...form, maintenanceDate: date })
                   }
                   dateFormat="dd/MM/yyyy"
                   className="w-full border border-gray-300 p-2 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
@@ -283,9 +283,9 @@ export default function AdminMaintenance() {
                   Próxima Manutenção
                 </label>
                 <DatePicker
-                  selected={form.next_maintenance_date}
+                  selected={form.nextMaintenanceDate}
                   onChange={(date: Date | null) =>
-                    setForm({ ...form, next_maintenance_date: date })
+                    setForm({ ...form, nextMaintenanceDate: date })
                   }
                   dateFormat="dd/MM/yyyy"
                   className="w-full border border-gray-300 p-2 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
@@ -333,9 +333,9 @@ export default function AdminMaintenance() {
                   className="w-full border border-gray-300 p-2 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
                   type="text"
                   placeholder="Nome da oficina/mecânico"
-                  value={form.service_provider}
+                  value={form.serviceProvider}
                   onChange={(e) =>
-                    setForm({ ...form, service_provider: e.target.value })
+                    setForm({ ...form, serviceProvider: e.target.value })
                   }
                 />
               </div>
@@ -348,9 +348,9 @@ export default function AdminMaintenance() {
                   className="w-full border border-gray-300 p-2 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
                   type="text"
                   placeholder="Link para o comprovante"
-                  value={form.receipt_url}
+                  value={form.receiptUrl}
                   onChange={(e) =>
-                    setForm({ ...form, receipt_url: e.target.value })
+                    setForm({ ...form, receiptUrl: e.target.value })
                   }
                 />
               </div>
@@ -409,7 +409,7 @@ export default function AdminMaintenance() {
                         {maintenance.truck ? (
                           <div>
                             <div className="font-medium">
-                              {maintenance.truck.license_plate}
+                              {maintenance.truck.licensePlate}
                             </div>
                             <div className="text-xs text-gray-500">
                               {maintenance.truck.brand}{" "}
@@ -424,11 +424,11 @@ export default function AdminMaintenance() {
                       </td>
                       <td className="px-6 py-4">
                         <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs">
-                          {getMaintenanceType(maintenance.maintenance_type)}
+                          {getMaintenanceType(maintenance.maintenanceType)}
                         </span>
                       </td>
                       <td className="px-6 py-4">
-                        {formatDate(maintenance.maintenance_date)}
+                        {formatDate(maintenance.maintenanceDate)}
                       </td>
                       <td className="px-6 py-4 font-medium">
                         {formatCurrency(maintenance.cost)}
@@ -480,13 +480,13 @@ export default function AdminMaintenance() {
                                 Próximos Passos
                               </h4>
                               <div className="space-y-1 text-sm text-gray-600">
-                                {maintenance.next_maintenance_date ? (
+                                {maintenance.nextMaintenanceDate ? (
                                   <p>
                                     <span className="font-medium">
                                       Próxima Manutenção:
                                     </span>{" "}
                                     {formatDate(
-                                      maintenance.next_maintenance_date
+                                      maintenance.nextMaintenanceDate
                                     )}
                                   </p>
                                 ) : (
@@ -507,12 +507,12 @@ export default function AdminMaintenance() {
                                   <span className="font-medium">
                                     Prestador:
                                   </span>{" "}
-                                  {maintenance.service_provider ||
+                                  {maintenance.serviceProvider ||
                                     "Não informado"}
                                 </p>
-                                {maintenance.receipt_url && (
+                                {maintenance.receiptUrl && (
                                   <a
-                                    href={maintenance.receipt_url}
+                                    href={maintenance.receiptUrl}
                                     target="_blank"
                                     rel="noopener noreferrer"
                                     className="text-green-600 hover:underline"

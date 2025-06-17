@@ -17,18 +17,19 @@ import apiClient from "@/services/api";
 type User = {
   id: number;
   name: string;
-  email: string;
+  truckId: string;
   userType: string;
+  email: string; 
 };
 
 type Trip = {
   id: number;
   origin: string;
   destination: string;
-  departure_time: string;
-  arrival_time: string;
+  departureTime: string;
+  arrivalTime: string;
   status: string;
-  cargo_description: string;
+  cargoDescription: string;
 };
 
 type Truck = {
@@ -79,21 +80,23 @@ export default function DriverDashboard() {
           return;
         }
 
-        setUser(data);
+        
+        setUser(data as User);
 
         const driverResponse = await apiClient.get(`/driver/${data.id}`);
-        setDriver(driverResponse.data as Driver[]);
+        
+        setDriver(driverResponse.data as Driver);
 
-        if (driverResponse.data.truck) {
-          setAssignedTruck(driverResponse.data.truck);
+        if ((driverResponse.data as Driver).truck) {
+          setAssignedTruck((driverResponse.data as Driver).truck as Truck);
 
           const truckNotifications = [];
           const maintenanceDue = new Date(
-            driverResponse.data.truck.maintenanceDueDate
+            (driverResponse.data as Driver).truck.maintenanceDueDate
           );
           const today = new Date();
-          const diffTime = maintenanceDue.getTime() - today.getTime();
-          const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+          const truckDiffTime = maintenanceDue.getTime() - today.getTime(); 
+          const diffDays = Math.ceil(truckDiffTime / (1000 * 60 * 60 * 24));
 
           if (diffDays <= 7) {
             truckNotifications.push({
@@ -103,7 +106,7 @@ export default function DriverDashboard() {
           }
 
           const insuranceDue = new Date(
-            driverResponse.data.truck.insuranceExpiration
+            (driverResponse.data as Driver).truck.insuranceExpiration
           );
           const insuranceDiffDays = Math.ceil(
             (insuranceDue.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)
@@ -116,9 +119,9 @@ export default function DriverDashboard() {
             });
           }
 
-          // Verificar validade da CNH
+          
           const licenseExpiration = new Date(
-            driverResponse.data.licenseExpiration
+            (driverResponse.data as Driver).licenseExpiration
           );
           const licenseDiffDays = Math.ceil(
             (licenseExpiration.getTime() - today.getTime()) /
@@ -135,7 +138,8 @@ export default function DriverDashboard() {
           setNotifications(truckNotifications);
         }
 
-        const tripsResponse = await apiClient.get(`/trips?driverId=${data.id}`);
+        const tripsResponse = await apiClient.get(`/trip?user_id=${data.id}`);
+        
         const allTrips = tripsResponse.data as Trip[];
 
         const current = allTrips.find(
@@ -147,12 +151,13 @@ export default function DriverDashboard() {
           .filter((trip: Trip) => trip.status === "scheduled")
           .sort(
             (a: Trip, b: Trip) =>
-              new Date(a.departure_time).getTime() -
-              new Date(b.departure_time).getTime()
+              new Date(a.departureTime).getTime() -
+              new Date(b.departureTime).getTime()
           );
         setUpcomingTrips(upcoming);
       } catch (error) {
         console.error("Erro ao carregar dados:", error);
+        
       } finally {
         setLoading(false);
       }
@@ -254,9 +259,7 @@ export default function DriverDashboard() {
           )}
         </div>
 
-        {/* Seção de informações principais */}
         <section className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Viagem atual */}
           <div className="bg-white p-6 rounded-xl shadow-sm border border-green-100 lg:col-span-2">
             <h3 className="text-lg font-semibold mb-4 text-gray-800 flex items-center">
               <MapPin className="w-5 h-5 text-orange-500 mr-2" />
@@ -280,20 +283,20 @@ export default function DriverDashboard() {
                   <div>
                     <p className="text-sm text-gray-600">Saída</p>
                     <p className="font-medium">
-                      {formatDate(currentTrip.departure_time)}
+                      {formatDate(currentTrip.departureTime)}
                     </p>
                   </div>
                   <div>
                     <p className="text-sm text-gray-600">Chegada Prevista</p>
                     <p className="font-medium">
-                      {formatDate(currentTrip.arrival_time)}
+                      {formatDate(currentTrip.arrivalTime)}
                     </p>
                   </div>
                 </div>
 
                 <div>
                   <p className="text-sm text-gray-600">Carga</p>
-                  <p className="font-medium">{currentTrip.cargo_description}</p>
+                  <p className="font-medium">{currentTrip.cargoDescription}</p>
                 </div>
 
                 <div className="flex space-x-3 pt-2">
@@ -324,7 +327,6 @@ export default function DriverDashboard() {
             )}
           </div>
 
-          {/* Caminhão atribuído */}
           <div className="bg-white p-6 rounded-xl shadow-sm border border-green-100">
             <h3 className="text-lg font-semibold mb-4 text-gray-800 flex items-center">
               <Truck className="w-5 h-5 text-orange-500 mr-2" />
@@ -371,9 +373,7 @@ export default function DriverDashboard() {
           </div>
         </section>
 
-        {/* Seção de próximas viagens e notificações */}
         <section className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Próximas viagens */}
           <div className="bg-white p-6 rounded-xl shadow-sm border border-green-100 lg:col-span-2">
             <h3 className="text-lg font-semibold mb-4 text-gray-800 flex items-center">
               <Calendar className="w-5 h-5 text-orange-500 mr-2" />
@@ -399,12 +399,12 @@ export default function DriverDashboard() {
                       <div>
                         <p className="text-sm text-gray-600">Data</p>
                         <p className="font-medium">
-                          {formatDate(trip.departure_time)}
+                          {formatDate(trip.departureTime)}
                         </p>
                       </div>
                       <div>
                         <p className="text-sm text-gray-600">Status</p>
-                        <p className="font-medium capiClienttalize">
+                        <p className="font-medium capitalize">
                           {trip.status.replace("_", " ")}
                         </p>
                       </div>
@@ -425,7 +425,6 @@ export default function DriverDashboard() {
             )}
           </div>
 
-          {/* Notificações */}
           <div className="bg-white p-6 rounded-xl shadow-sm border border-green-100">
             <h3 className="text-lg font-semibold mb-4 text-gray-800 flex items-center">
               <AlertCircle className="w-5 h-5 text-orange-500 mr-2" />
