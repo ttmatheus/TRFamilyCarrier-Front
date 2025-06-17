@@ -28,9 +28,9 @@ type Trip = {
 
 type FreightBill = {
   id: number;
-  company_revenue: number;
-  payment_status: string;
-  trip_id: number;
+  companyRevenue: number;
+  paymentStatus: string;
+  tripId: number;
 };
 
 type Expense = {
@@ -66,20 +66,32 @@ export default function AdminReports() {
     // outros campos que sua API retorna
   }
 
-  interface TripResponse {
-    id: number;
-    destination: string;
-    departure_time: string;
-    status: string;
-    cargo_weight: number;
-    origin: string;
-  }
+  type TripResponse = {
+  id: number;
+  origin: string;
+  destination: string;
+  status: string;
+  departure_time: string;
+  arrival_time: string;
+  receiver_name: string;
+  receiver_document: string;
+  cargo_description: string;
+  cargo_weight: number;
+  driver_id?: number;
+  truck_id?: number;
+  driver?: {
+    name: string;
+  };
+  truck?: {
+    licensePlate: string;
+  };
+};
 
   interface FreightBillResponse {
     id: number;
-    company_revenue: number;
-    payment_status: string;
-    trip_id: number;
+    companyRevenue: number;
+    paymentStatus: string;
+    tripId: number;
   }
 
   interface ExpenseResponse {
@@ -113,7 +125,7 @@ export default function AdminReports() {
       typeof item === "object" &&
       item !== null &&
       "id" in item &&
-      "company_revenue" in item
+      "companyRevenue" in item
     );
   };
 
@@ -140,16 +152,16 @@ export default function AdminReports() {
       if (!user?.id) throw new Error("Usuário não identificado");
 
       const [tripsRes, freightBillsRes, expensesRes] = await Promise.all([
-        apiClient.get<ApiResponse<TripResponse[]>>(`/trip?user_id=${user.id}`, {
+        apiClient.get<ApiResponse<TripResponse[]>>(`/trip/trips`, {
           headers: { Authorization: `Bearer ${token}` },
         }),
         apiClient.get<ApiResponse<FreightBillResponse[]>>(
-          `/freightbill?user_id=${user.id}`,
+          `/freightbill/freightbills`,
           {
             headers: { Authorization: `Bearer ${token}` },
           }
         ),
-        apiClient.get<ApiResponse<ExpenseResponse[]>>(`/expenses`, {
+        apiClient.get<ApiResponse<ExpenseResponse[]>>(`/expense/expenses`, {
           headers: { Authorization: `Bearer ${token}` },
         }),
       ]);
@@ -170,9 +182,9 @@ export default function AdminReports() {
         isFreightBillResponse
       ).map((bill) => ({
         id: bill.id,
-        company_revenue: bill.company_revenue,
-        payment_status: bill.payment_status,
-        trip_id: bill.trip_id,
+        companyRevenue: bill.companyRevenue,
+        paymentStatus: bill.paymentStatus,
+        tripId: bill.tripId,
       }));
 
       const expenses: Expense[] = ensureArray(
@@ -204,7 +216,7 @@ export default function AdminReports() {
     const activeTrips = trips.filter((t) => t.status === "in_progress").length;
 
     const totalRevenue = freightBills.reduce(
-      (sum, bill) => sum + (bill.company_revenue || 0),
+      (sum, bill) => sum + (bill.companyRevenue || 0),
       0
     );
 

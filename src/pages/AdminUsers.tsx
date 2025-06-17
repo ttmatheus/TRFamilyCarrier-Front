@@ -8,23 +8,25 @@ import {
   User,
   ChevronDown,
   ChevronUp,
+  XCircle, // Adicionado para o botão de fechar o formulário de edição
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import apiClient from "@/services/api";
 
-type User = {
+type UserType = { // Renomeado para UserType para evitar conflito com 'User' do lucide-react
   id: string;
   name: string;
   email: string;
   role: "admin" | "driver";
-  isActive: boolean;
+  active: boolean;
   lastLogin?: string;
   createdAt: string;
   driverInfo?: {
     licenseNumber: string;
-    licenseExpiration: string;
+    licenseExpiration: string; // Formato YYYY-MM-DD
     phoneNumber: string;
     truck?: {
+      id: string; // Adicionado id do caminhão para pré-seleção
       licensePlate: string;
       brand: string;
       model: string;
@@ -32,7 +34,7 @@ type User = {
   };
 };
 
-type Truck = {
+type TruckType = { // Renomeado para TruckType
   id: string;
   licensePlate: string;
   brand: string;
@@ -42,11 +44,26 @@ type Truck = {
 };
 
 export default function AdminUsers() {
-  const [users, setUsers] = useState<User[]>([]);
-  const [trucks, setTrucks] = useState<Truck[]>([]);
-  const [showForm, setShowForm] = useState(false);
+  const [users, setUsers] = useState<UserType[]>([]);
+  const [trucks, setTrucks] = useState<TruckType[]>([]);
+  const [showCreateForm, setShowCreateForm] = useState(false); // Renomeado para clareza
   const [expandedRows, setExpandedRows] = useState<Record<string, boolean>>({});
-  const [form, setForm] = useState({
+
+  // --- Novos estados para o formulário de edição ---
+  const [showEditForm, setShowEditForm] = useState(false);
+  const [editingUser, setEditingUser] = useState<UserType | null>(null); // Usuário sendo editado
+  const [editForm, setEditForm] = useState({ // Estado para os campos do formulário de edição
+    name: "",
+    email: "",
+    role: "" as "admin" | "driver" | "", // Permitir string vazia para o estado inicial
+    licenseNumber: "",
+    licenseExpiration: "",
+    phoneNumber: "",
+    truckId: "", // ID do caminhão associado
+    active: false, // Novo campo para status do usuário
+  });
+
+  const [createForm, setCreateForm] = useState({ // Renomeado para clareza
     name: "",
     email: "",
     password: "",
@@ -68,7 +85,7 @@ export default function AdminUsers() {
       const res = await apiClient.get("/users", {
         headers: { Authorization: `Bearer ${token}` },
       });
-      setUsers(res.data as User[]);
+      setUsers(res.data as UserType[]);
     } catch (error) {
       console.error("Erro ao buscar usuários:", error);
     }
@@ -82,13 +99,11 @@ export default function AdminUsers() {
       const res = await apiClient.get("/truck", {
         headers: { Authorization: `Bearer ${token}` },
       });
-      setTrucks(res.data as Truck[]);
+      setTrucks(res.data as TruckType[]);
     } catch (error) {
       console.error("Erro ao buscar caminhões:", error);
     }
   };
-
-  // Adicione estas funções atualizadas no seu componente
 
   const deleteUser = async (id: string) => {
     const confirmed = window.confirm(
@@ -101,13 +116,13 @@ export default function AdminUsers() {
         sessionStorage.getItem("authToken") ||
         localStorage.getItem("authToken");
       await apiClient.delete(`/users/${id}`, {
-        // Alterado para o formato REST convencional
         headers: {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
         },
       });
       await fetchUsers();
+      alert("Usuário excluído com sucesso!");
     } catch (error) {
       console.error("Erro ao excluir usuário:", error);
       alert("Não foi possível excluir o usuário. Verifique suas permissões.");
@@ -116,15 +131,15 @@ export default function AdminUsers() {
 
   const handleCreateUser = async () => {
     try {
-      // Validação básica dos campos
-      if (!form.name || !form.email || !form.password) {
+      // Validação básica dos campos do formulário de CRIAÇÃO
+      if (!createForm.name || !createForm.email || !createForm.password) {
         alert("Preencha todos os campos obrigatórios");
         return;
       }
 
       if (
-        form.role === "driver" &&
-        (!form.licenseNumber || !form.licenseExpiration)
+        createForm.role === "driver" &&
+        (!createForm.licenseNumber || !createForm.licenseExpiration)
       ) {
         alert("Para motoristas, preencha os dados da CNH");
         return;
@@ -136,21 +151,21 @@ export default function AdminUsers() {
       if (!token) return;
 
       const userData = {
-        name: form.name,
-        email: form.email,
-        password: form.password,
-        role: form.role,
-        ...(form.role === "driver" && {
+        name: createForm.name,
+        email: createForm.email,
+        password: createForm.password,
+        role: createForm.role,
+        ...(createForm.role === "driver" && {
           driverInfo: {
-            licenseNumber: form.licenseNumber,
-            licenseExpiration: form.licenseExpiration,
-            phoneNumber: form.phoneNumber,
-            truckId: form.truckId ? parseInt(form.truckId) : null,
+            licenseNumber: createForm.licenseNumber,
+            licenseExpiration: createForm.licenseExpiration,
+            phoneNumber: createForm.phoneNumber,
+            truckId: createForm.truckId ? parseInt(createForm.truckId) : null,
           },
         }),
       };
 
-      const response = await apiClient.post("/users", userData, {
+      const response = await apiClient.post("/users/create", userData, {
         headers: {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
@@ -158,7 +173,7 @@ export default function AdminUsers() {
       });
 
       if (response.status === 201) {
-        setForm({
+        setCreateForm({
           name: "",
           email: "",
           password: "",
@@ -168,7 +183,7 @@ export default function AdminUsers() {
           phoneNumber: "",
           truckId: "",
         });
-        setShowForm(false);
+        setShowCreateForm(false);
         await fetchUsers();
         alert("Usuário criado com sucesso!");
       }
@@ -186,6 +201,138 @@ export default function AdminUsers() {
       ...prev,
       [userId]: !prev[userId],
     }));
+  };
+
+  // --- Funções de Edição ---
+
+  const openEditForm = (user: UserType) => {
+    setEditingUser(user);
+    setEditForm({
+      name: user.name,
+      email: user.email,
+      role: user.role,
+      licenseNumber: user.driverInfo?.licenseNumber || "",
+      licenseExpiration: user.driverInfo?.licenseExpiration || "",
+      phoneNumber: user.driverInfo?.phoneNumber || "",
+      truckId: user.driverInfo?.truck?.id || "",
+      active: user.active, // Inicializa o status
+    });
+    setShowEditForm(true);
+    setShowCreateForm(false); // Fecha o formulário de criação se estiver aberto
+  };
+
+  const closeEditForm = () => {
+    setEditingUser(null);
+    setShowEditForm(false);
+    setEditForm({
+      name: "",
+      email: "",
+      role: "" as "admin" | "driver" | "",
+      licenseNumber: "",
+      licenseExpiration: "",
+      phoneNumber: "",
+      truckId: "",
+      active: false,
+    });
+  };
+
+  const handleEditInputChange = (
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
+    >
+  ) => {
+    const { name, value, type, checked } = e.target as HTMLInputElement;
+
+    setEditForm((prev) => ({
+      ...prev,
+      [name]: type === "checkbox" ? checked : value,
+    }));
+  };
+
+  const handleUpdateUser = async () => {
+    if (!editingUser) return;
+
+    try {
+      const token =
+        sessionStorage.getItem("authToken") ||
+        localStorage.getItem("authToken");
+      if (!token) return;
+
+      const updatedUserData: any = {
+        name: editForm.name,
+        email: editForm.email,
+        role: editForm.role,
+        active: editForm.active, // Envia o status
+      };
+
+      if (editForm.role === "driver") {
+        updatedUserData.driverInfo = {
+          licenseNumber: editForm.licenseNumber,
+          licenseExpiration: editForm.licenseExpiration,
+          phoneNumber: editForm.phoneNumber,
+          // Garante que truckId seja null ou um número
+          truckId: editForm.truckId ? parseInt(editForm.truckId) : null,
+        };
+      } else {
+        // Se o cargo for alterado para admin, remove driverInfo
+        updatedUserData.driverInfo = null;
+      }
+
+      // IMPORTANTE: Filtrar campos para enviar apenas os que mudaram ou estão preenchidos.
+      // O backend espera campos opcionais, então não envie valores vazios se não houver mudança.
+      const payload: any = {};
+      for (const key in updatedUserData) {
+        // Verifica se o campo não é nulo/vazio ou se é um booleano (para active)
+        if (updatedUserData[key] !== "" && updatedUserData[key] !== null && updatedUserData[key] !== undefined) {
+             if (key === 'driverInfo') {
+                // Para driverInfo, apenas inclua se houver dados úteis,
+                // ou se a role for driver e você precisar enviar o objeto driverInfo (mesmo que vazio)
+                const filteredDriverInfo:any = {};
+                if (updatedUserData.driverInfo) {
+                    for (const driverKey in updatedUserData.driverInfo) {
+                        if (updatedUserData.driverInfo[driverKey] !== "" && updatedUserData.driverInfo[driverKey] !== null && updatedUserData.driverInfo[driverKey] !== undefined) {
+                            filteredDriverInfo[driverKey] = updatedUserData.driverInfo[driverKey];
+                        }
+                    }
+                }
+                if (Object.keys(filteredDriverInfo).length > 0) {
+                     payload.driverInfo = filteredDriverInfo;
+                } else if (updatedUserData.role === 'admin') {
+                    // Se mudou para admin, garanta que driverInfo seja null no payload
+                    payload.driverInfo = null;
+                }
+             } else {
+                payload[key] = updatedUserData[key];
+             }
+        }
+      }
+      
+      // Validação adicional: Se mudou para driver e faltam campos importantes
+      if (payload.role === 'driver' && (!payload.driverInfo || !payload.driverInfo.licenseNumber || !payload.driverInfo.licenseExpiration)) {
+        alert("Para motoristas, o número e validade da CNH são obrigatórios.");
+        return;
+      }
+
+
+      const response = await apiClient.put(`/users/${editingUser.id}`, payload, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (response.status === 200) {
+        alert("Usuário atualizado com sucesso!");
+        closeEditForm();
+        await fetchUsers(); // Recarrega a lista de usuários para ver as mudanças
+      }
+    } catch (error: any) {
+      console.error("Erro ao atualizar usuário:", error);
+      const errorMessage =
+        error.response?.data?.message ||
+        "Houve um problema desconhecido ao tentar atualizar o usuário.";
+      alert(errorMessage);
+    }
   };
 
   useEffect(() => {
@@ -209,17 +356,23 @@ export default function AdminUsers() {
           </button>
         </div>
 
+        {/* Botão de Criar Novo Usuário */}
         <div className="mb-6">
           <button
-            onClick={() => setShowForm(!showForm)}
+            onClick={() => {
+              setShowCreateForm(!showCreateForm);
+              setShowEditForm(false); // Garante que o formulário de edição esteja fechado
+              setEditingUser(null);
+            }}
             className="flex items-center px-4 py-2 text-sm font-medium bg-gradient-to-r from-green-600 to-green-700 text-white rounded-lg hover:from-green-700 hover:to-green-800"
           >
             <Plus className="w-4 h-4 mr-2" />
-            {showForm ? "Cancelar" : "Criar Novo Usuário"}
+            {showCreateForm ? "Cancelar" : "Criar Novo Usuário"}
           </button>
         </div>
 
-        {showForm && (
+        {/* Formulário de Criação de Usuário */}
+        {showCreateForm && (
           <div className="bg-white p-6 rounded-xl shadow-sm border border-green-100 mb-6">
             <h2 className="text-lg font-semibold mb-4 text-gray-800">
               Novo Usuário
@@ -231,8 +384,10 @@ export default function AdminUsers() {
                   className="w-full border border-gray-300 p-2 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
                   type="text"
                   placeholder="Nome completo"
-                  value={form.name}
-                  onChange={(e) => setForm({ ...form, name: e.target.value })}
+                  value={createForm.name}
+                  onChange={(e) =>
+                    setCreateForm({ ...createForm, name: e.target.value })
+                  }
                 />
               </div>
               <div>
@@ -243,8 +398,10 @@ export default function AdminUsers() {
                   className="w-full border border-gray-300 p-2 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
                   type="email"
                   placeholder="E-mail"
-                  value={form.email}
-                  onChange={(e) => setForm({ ...form, email: e.target.value })}
+                  value={createForm.email}
+                  onChange={(e) =>
+                    setCreateForm({ ...createForm, email: e.target.value })
+                  }
                 />
               </div>
               <div>
@@ -255,9 +412,9 @@ export default function AdminUsers() {
                   className="w-full border border-gray-300 p-2 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
                   type="password"
                   placeholder="Senha"
-                  value={form.password}
+                  value={createForm.password}
                   onChange={(e) =>
-                    setForm({ ...form, password: e.target.value })
+                    setCreateForm({ ...createForm, password: e.target.value })
                   }
                 />
               </div>
@@ -267,10 +424,10 @@ export default function AdminUsers() {
                 </label>
                 <select
                   className="w-full border border-gray-300 p-2 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
-                  value={form.role}
+                  value={createForm.role}
                   onChange={(e) =>
-                    setForm({
-                      ...form,
+                    setCreateForm({
+                      ...createForm,
                       role: e.target.value as "admin" | "driver",
                     })
                   }
@@ -281,7 +438,7 @@ export default function AdminUsers() {
               </div>
             </div>
 
-            {form.role === "driver" && (
+            {createForm.role === "driver" && (
               <div className="mt-4 border-t pt-4">
                 <h3 className="text-md font-semibold mb-3 text-gray-800 flex items-center">
                   <Truck className="w-5 h-5 mr-2 text-orange-600" />
@@ -296,9 +453,9 @@ export default function AdminUsers() {
                       className="w-full border border-gray-300 p-2 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
                       type="text"
                       placeholder="CNH"
-                      value={form.licenseNumber}
+                      value={createForm.licenseNumber}
                       onChange={(e) =>
-                        setForm({ ...form, licenseNumber: e.target.value })
+                        setCreateForm({ ...createForm, licenseNumber: e.target.value })
                       }
                     />
                   </div>
@@ -309,9 +466,9 @@ export default function AdminUsers() {
                     <input
                       className="w-full border border-gray-300 p-2 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
                       type="date"
-                      value={form.licenseExpiration}
+                      value={createForm.licenseExpiration}
                       onChange={(e) =>
-                        setForm({ ...form, licenseExpiration: e.target.value })
+                        setCreateForm({ ...createForm, licenseExpiration: e.target.value })
                       }
                     />
                   </div>
@@ -323,9 +480,9 @@ export default function AdminUsers() {
                       className="w-full border border-gray-300 p-2 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
                       type="text"
                       placeholder="(00) 00000-0000"
-                      value={form.phoneNumber}
+                      value={createForm.phoneNumber}
                       onChange={(e) =>
-                        setForm({ ...form, phoneNumber: e.target.value })
+                        setCreateForm({ ...createForm, phoneNumber: e.target.value })
                       }
                     />
                   </div>
@@ -335,9 +492,9 @@ export default function AdminUsers() {
                     </label>
                     <select
                       className="w-full border border-gray-300 p-2 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
-                      value={form.truckId}
+                      value={createForm.truckId}
                       onChange={(e) =>
-                        setForm({ ...form, truckId: e.target.value })
+                        setCreateForm({ ...createForm, truckId: e.target.value })
                       }
                     >
                       <option value="">Selecione um caminhão</option>
@@ -362,6 +519,161 @@ export default function AdminUsers() {
           </div>
         )}
 
+        {/* --- Formulário de Edição de Usuário --- */}
+        {showEditForm && editingUser && (
+          <div className="bg-white p-6 rounded-xl shadow-sm border border-green-100 mb-6 relative">
+            <h2 className="text-lg font-semibold mb-4 text-gray-800">
+              Editar Usuário: {editingUser.name}
+            </h2>
+            <button
+              onClick={closeEditForm}
+              className="absolute top-4 right-4 text-gray-500 hover:text-gray-700"
+              title="Fechar formulário"
+            >
+              <XCircle className="w-6 h-6" />
+            </button>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+              <div>
+                <label className="block text-sm text-gray-600 mb-1">Nome</label>
+                <input
+                  className="w-full border border-gray-300 p-2 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                  type="text"
+                  name="name" // Adicionar 'name' para handleEditInputChange
+                  placeholder="Nome completo"
+                  value={editForm.name}
+                  onChange={handleEditInputChange}
+                />
+              </div>
+              <div>
+                <label className="block text-sm text-gray-600 mb-1">
+                  E-mail
+                </label>
+                <input
+                  className="w-full border border-gray-300 p-2 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                  type="email"
+                  name="email" // Adicionar 'name'
+                  placeholder="E-mail"
+                  value={editForm.email}
+                  onChange={handleEditInputChange}
+                />
+              </div>
+              <div>
+                <label className="block text-sm text-gray-600 mb-1">
+                  Cargo
+                </label>
+                <select
+                  className="w-full border border-gray-300 p-2 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                  name="role" // Adicionar 'name'
+                  value={editForm.role}
+                  onChange={handleEditInputChange}
+                >
+                  <option value="driver">Motorista</option>
+                  <option value="admin">Administrador</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm text-gray-600 mb-1">
+                  Status
+                </label>
+                <div className="flex items-center mt-2">
+                  <input
+                    type="checkbox"
+                    name="active" // Adicionar 'name'
+                    checked={editForm.active}
+                    onChange={handleEditInputChange}
+                    className="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded"
+                  />
+                  <span className="ml-2 text-gray-700">Usuário Ativo</span>
+                </div>
+              </div>
+            </div>
+
+            {editForm.role === "driver" && (
+              <div className="mt-4 border-t pt-4">
+                <h3 className="text-md font-semibold mb-3 text-gray-800 flex items-center">
+                  <Truck className="w-5 h-5 mr-2 text-orange-600" />
+                  Dados do Motorista
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div>
+                    <label className="block text-sm text-gray-600 mb-1">
+                      Número da CNH
+                    </label>
+                    <input
+                      className="w-full border border-gray-300 p-2 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                      type="text"
+                      name="licenseNumber" // Adicionar 'name'
+                      placeholder="CNH"
+                      value={editForm.licenseNumber}
+                      onChange={handleEditInputChange}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm text-gray-600 mb-1">
+                      Validade da CNH
+                    </label>
+                    <input
+                      className="w-full border border-gray-300 p-2 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                      type="date"
+                      name="licenseExpiration" // Adicionar 'name'
+                      value={editForm.licenseExpiration}
+                      onChange={handleEditInputChange}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm text-gray-600 mb-1">
+                      Telefone
+                    </label>
+                    <input
+                      className="w-full border border-gray-300 p-2 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                      type="text"
+                      name="phoneNumber" // Adicionar 'name'
+                      placeholder="(00) 00000-0000"
+                      value={editForm.phoneNumber}
+                      onChange={handleEditInputChange}
+                    />
+                  </div>
+                  <div className="md:col-span-3">
+                    <label className="block text-sm text-gray-600 mb-1">
+                      Caminhão Associado
+                    </label>
+                    <select
+                      className="w-full border border-gray-300 p-2 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                      name="truckId" // Adicionar 'name'
+                      value={editForm.truckId}
+                      onChange={handleEditInputChange}
+                    >
+                      <option value="">Selecione um caminhão</option>
+                      {trucks.map((truck) => (
+                        <option key={truck.id} value={truck.id}>
+                          {truck.licensePlate} - {truck.brand} {truck.model} (
+                          {truck.year})
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            <div className="mt-6 flex justify-end space-x-3">
+              <button
+                onClick={closeEditForm}
+                className="bg-gray-300 text-gray-800 px-6 py-2 rounded-lg hover:bg-gray-400"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={handleUpdateUser}
+                className="bg-gradient-to-r from-blue-600 to-blue-700 text-white px-6 py-2 rounded-lg hover:from-blue-700 hover:to-blue-800"
+              >
+                Salvar Alterações
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Tabela de Usuários */}
         <div className="bg-white rounded-xl shadow-sm border border-green-100 overflow-hidden">
           <table className="min-w-full">
             <thead className="bg-green-50 text-gray-700">
@@ -375,11 +687,12 @@ export default function AdminUsers() {
             </thead>
             <tbody>
               {users.map((user) => (
+                // O Fragment <>...</> é necessário para retornar múltiplos elementos (tr da linha principal e tr da linha expandida)
                 <>
                   <tr
                     key={user.id}
                     className="border-t border-green-100 hover:bg-green-50 cursor-pointer"
-                    onClick={() => toggleRow(user.id)}
+                    onClick={() => toggleRow(user.id)} // Expande/colapsa ao clicar na linha
                   >
                     <td className="px-6 py-4">
                       <div className="flex items-center">
@@ -400,12 +713,12 @@ export default function AdminUsers() {
                     <td className="px-6 py-4">
                       <span
                         className={`px-2 py-1 rounded-full text-xs font-medium ${
-                          user.isActive
+                          user.active
                             ? "bg-green-100 text-green-800"
                             : "bg-red-100 text-red-800"
                         }`}
                       >
-                        {user.isActive ? "Ativo" : "Inativo"}
+                        {user.active ? "Ativo" : "Inativo"}
                       </span>
                     </td>
                     <td className="px-6 py-4 text-gray-500">
@@ -414,13 +727,13 @@ export default function AdminUsers() {
                         : "Nunca acessou"}
                     </td>
                     <td className="px-6 py-4 flex space-x-2">
-                      {user.email !== "root@admin.com" && (
+                      {user.email !== "root@admin.com" && ( // Não permite editar/excluir o usuário root
                         <>
                           <button
                             className="text-green-600 hover:text-green-800 p-1 rounded-full hover:bg-green-100"
                             onClick={(e) => {
-                              e.stopPropagation();
-                              // editUser(user);
+                              e.stopPropagation(); // Impede que o clique na linha ative o toggleRow
+                              openEditForm(user); // Abre o formulário de edição com os dados do usuário
                             }}
                           >
                             <Pencil className="w-4 h-4" />
@@ -428,7 +741,7 @@ export default function AdminUsers() {
                           <button
                             className="text-red-600 hover:text-red-800 p-1 rounded-full hover:bg-red-100"
                             onClick={(e) => {
-                              e.stopPropagation();
+                              e.stopPropagation(); // Impede que o clique na linha ative o toggleRow
                               deleteUser(user.id);
                             }}
                           >
@@ -439,7 +752,7 @@ export default function AdminUsers() {
                       <button
                         className="text-gray-500 hover:text-gray-700 p-1 rounded-full hover:bg-gray-100"
                         onClick={(e) => {
-                          e.stopPropagation();
+                          e.stopPropagation(); // Impede que o clique na linha ative o toggleRow
                           toggleRow(user.id);
                         }}
                       >

@@ -34,7 +34,7 @@ type Trip = {
     name: string;
   };
   truck?: {
-    license_plate: string;
+    licensePlate: string;
   };
 };
 
@@ -45,7 +45,16 @@ type Driver = {
 
 type Truck = {
   id: number;
-  license_plate: string;
+  licensePlate: string;
+  brand: string;
+  model: string;
+  year: number;
+  fuelType: string;
+  maxLoadCapacity: number;
+  currentMileage: number;
+  maintenanceDueDate: string;
+  insuranceExpiration: string;
+  status: "available" | "in_use" | "maintenance" | "inactive";
 };
 
 export default function AdminTrips() {
@@ -60,14 +69,34 @@ export default function AdminTrips() {
   const [form, setForm] = useState({
     origin: "",
     destination: "",
-    departure_time: new Date(),
-    receiver_name: "",
-    receiver_document: "",
-    cargo_description: "",
-    cargo_weight: 0,
-    driver_id: "",
-    truck_id: "",
+    departureTime: new Date(),
+    receiverName: "",
+    receiverDocument: "",
+    cargoDescription: "",
+    cargoWeight: 0,
+    driverId: "",
+    truckId: "",
   });
+
+  const validateForm = () => {
+    const requiredFields = [
+      form.origin,
+      form.destination,
+      form.departureTime,
+      form.driverId,
+      form.truckId,
+      form.receiverName,
+      form.receiverDocument,
+      form.cargoDescription,
+      form.cargoWeight,
+    ];
+
+    return requiredFields.every((field) => {
+      if (typeof field === 'string') return field.trim() !== '';
+      if (typeof field === 'number') return field > 0;
+      return !!field;
+    });
+  };
 
   const fetchData = async () => {
     try {
@@ -80,13 +109,13 @@ export default function AdminTrips() {
       if (!user?.id) throw new Error("Usuário não identificado");
 
       const [tripsRes, driversRes, trucksRes] = await Promise.all([
-        apiClient.get(`/trip?user_id=${user.id}`, {
+        apiClient.get(`/trip/trips`, {
           headers: { Authorization: `Bearer ${token}` },
         }),
-        apiClient.get(`/drivers`, {
+        apiClient.get(`/driver/drivers`, {
           headers: { Authorization: `Bearer ${token}` },
         }),
-        apiClient.get(`/truck`, {
+        apiClient.get(`/truck/trucks`, {
           headers: { Authorization: `Bearer ${token}` },
         }),
       ]);
@@ -103,6 +132,10 @@ export default function AdminTrips() {
 
   const handleCreateTrip = async () => {
     try {
+      if (!validateForm()) {
+        alert("Por favor, preencha todos os campos obrigatórios.");
+        return;
+      }
       const token =
         sessionStorage.getItem("authToken") ||
         localStorage.getItem("authToken");
@@ -110,9 +143,9 @@ export default function AdminTrips() {
 
       const tripData = {
         ...form,
-        departure_time: form.departure_time.toISOString(),
-        driver_id: form.driver_id ? parseInt(form.driver_id) : null,
-        truck_id: form.truck_id ? parseInt(form.truck_id) : null,
+        departureTime: form.departureTime.toISOString(),
+        driverId: form.driverId ? parseInt(form.driverId) : null,
+        truckId: form.truckId ? parseInt(form.truckId) : null,
       };
 
       await apiClient.post("/trip/create", tripData, {
@@ -131,13 +164,13 @@ export default function AdminTrips() {
     setForm({
       origin: "",
       destination: "",
-      departure_time: new Date(),
-      receiver_name: "",
-      receiver_document: "",
-      cargo_description: "",
-      cargo_weight: 0,
-      driver_id: "",
-      truck_id: "",
+      departureTime: new Date(),
+      receiverName: "",
+      receiverDocument: "",
+      cargoDescription: "",
+      cargoWeight: 0,
+      driverId: "",
+      truckId: "",
     });
   };
 
@@ -222,6 +255,7 @@ export default function AdminTrips() {
                   Origem
                 </label>
                 <input
+                  required
                   className="w-full border border-gray-300 p-2 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
                   type="text"
                   placeholder="Cidade de origem"
@@ -235,6 +269,7 @@ export default function AdminTrips() {
                   Destino
                 </label>
                 <input
+                  required
                   className="w-full border border-gray-300 p-2 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
                   type="text"
                   placeholder="Cidade de destino"
@@ -250,7 +285,8 @@ export default function AdminTrips() {
                   Data de Partida
                 </label>
                 <DatePicker
-                  selected={form.departure_time}
+                  required
+                  selected={form.departureTime}
                   showTimeSelect
                   timeFormat="HH:mm"
                   timeIntervals={15}
@@ -258,7 +294,7 @@ export default function AdminTrips() {
                   className="w-full border border-gray-300 p-2 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
                   onChange={(date: Date | null) => {
                     if (date) {
-                      setForm({ ...form, departure_time: date });
+                      setForm({ ...form, departureTime: date });
                     }
                   }}
                 />
@@ -269,10 +305,11 @@ export default function AdminTrips() {
                   Motorista
                 </label>
                 <select
+                  required
                   className="w-full border border-gray-300 p-2 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
-                  value={form.driver_id}
+                  value={form.driverId}
                   onChange={(e) =>
-                    setForm({ ...form, driver_id: e.target.value })
+                    setForm({ ...form, driverId: e.target.value })
                   }
                 >
                   <option value="">Selecione um motorista</option>
@@ -289,16 +326,17 @@ export default function AdminTrips() {
                   Caminhão
                 </label>
                 <select
+                  required
                   className="w-full border border-gray-300 p-2 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
-                  value={form.truck_id}
+                  value={form.truckId}
                   onChange={(e) =>
-                    setForm({ ...form, truck_id: e.target.value })
+                    setForm({ ...form, truckId: e.target.value })
                   }
                 >
                   <option value="">Selecione um caminhão</option>
                   {trucks.map((truck) => (
                     <option key={truck.id} value={truck.id}>
-                      {truck.license_plate}
+                      {truck.licensePlate}
                     </option>
                   ))}
                 </select>
@@ -309,12 +347,13 @@ export default function AdminTrips() {
                   Destinatário
                 </label>
                 <input
+                  required
                   className="w-full border border-gray-300 p-2 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
                   type="text"
                   placeholder="Nome do destinatário"
-                  value={form.receiver_name}
+                  value={form.receiverName}
                   onChange={(e) =>
-                    setForm({ ...form, receiver_name: e.target.value })
+                    setForm({ ...form, receiverName: e.target.value })
                   }
                 />
               </div>
@@ -324,12 +363,13 @@ export default function AdminTrips() {
                   Documento Destinatário
                 </label>
                 <input
+                  required
                   className="w-full border border-gray-300 p-2 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
                   type="text"
                   placeholder="CPF/CNPJ do destinatário"
-                  value={form.receiver_document}
+                  value={form.receiverDocument}
                   onChange={(e) =>
-                    setForm({ ...form, receiver_document: e.target.value })
+                    setForm({ ...form, receiverDocument: e.target.value })
                   }
                 />
               </div>
@@ -339,12 +379,13 @@ export default function AdminTrips() {
                   Descrição da Carga
                 </label>
                 <textarea
+                  required
                   className="w-full border border-gray-300 p-2 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
                   placeholder="Descrição detalhada da carga"
                   rows={3}
-                  value={form.cargo_description}
+                  value={form.cargoDescription}
                   onChange={(e) =>
-                    setForm({ ...form, cargo_description: e.target.value })
+                    setForm({ ...form, cargoDescription: e.target.value })
                   }
                 />
               </div>
@@ -354,14 +395,15 @@ export default function AdminTrips() {
                   Peso da Carga (kg)
                 </label>
                 <input
+                  required
                   className="w-full border border-gray-300 p-2 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
                   type="number"
                   placeholder="Peso em quilogramas"
-                  value={form.cargo_weight}
+                  value={form.cargoWeight}
                   onChange={(e) =>
                     setForm({
                       ...form,
-                      cargo_weight: parseFloat(e.target.value) || 0,
+                      cargoWeight: parseFloat(e.target.value) || 0,
                     })
                   }
                 />
@@ -486,7 +528,7 @@ export default function AdminTrips() {
                                 {trip.truck ? (
                                   <p>
                                     <span className="font-medium">Placa:</span>{" "}
-                                    {trip.truck.license_plate}
+                                    {trip.truck.licensePlate}
                                   </p>
                                 ) : (
                                   <p className="text-gray-400">

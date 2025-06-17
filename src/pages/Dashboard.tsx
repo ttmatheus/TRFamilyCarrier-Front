@@ -1,13 +1,17 @@
+// src/pages/DriverDashboard.tsx
 import { useEffect, useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/Tabs";
 import apiClient from "@/services/api";
 import { decodeToken } from "@/utils/jwtDecode";
+import { authService } from "@/services/authService";
+
+type TripStatus = "scheduled" | "in_progress" | "completed" | "canceled";
 
 type Trip = {
   id: string;
   origin: string;
   destination: string;
-  status: string;
+  status: TripStatus;
   date: string;
 };
 
@@ -67,6 +71,7 @@ export default function DriverDashboard() {
         setFreightBills(freightBillsResponse.data);
         setLoading(false);
       } catch (err) {
+        console.error("Failed to fetch data:", err);
         setError("Erro ao carregar dados. Tente novamente.");
         setLoading(false);
       }
@@ -75,74 +80,147 @@ export default function DriverDashboard() {
     fetchData();
   }, []);
 
-  if (loading) return <div>Carregando...</div>;
-  if (error) return <div className="text-red-600">{error}</div>;
+  if (loading) return <div className="p-6 text-center text-gray-700">Carregando...</div>;
+  if (error) return <div className="p-6 text-red-600 text-center">{error}</div>;
+
+  // Função auxiliar para formatar valores monetários
+  const formatCurrency = (value: number) => {
+    return new Intl.NumberFormat('pt-BR', {
+      style: 'currency',
+      currency: 'BRL',
+    }).format(value);
+  };
+
+  const getTripStatusTranslation = (status: TripStatus) => {
+    switch (status) {
+      case "scheduled": return "Agendada";
+      case "in_progress": return "Em Progresso";
+      case "completed": return "Concluída";
+      case "canceled": return "Cancelada";
+      default: return status;
+    }
+  };
+
+  const getFreightBillStatusTranslation = (status: FreightBillStatus) => {
+    switch (status) {
+      case "pending": return "Pendente";
+      case "paid": return "Paga";
+      case "cancelled": return "Cancelada";
+      default: return status;
+    }
+  };
 
   return (
-    <div className="p-6">
-      <h1 className="text-2xl font-bold mb-4">Dashboard do Motorista</h1>
+    <div className="p-6 bg-gray-50 min-h-screen relative"> {/* Adicionado 'relative' para posicionamento absoluto do botão */}
+      <div className="absolute top-6 right-6"> {/* Posicionamento do botão */}
+        <button
+          onClick={authService.logout}
+          className="flex items-center text-sm bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700 transition-colors duration-200"
+        >
+          Sair
+        </button>
+      </div>
 
-      <Tabs defaultValue="trips">
-        <TabsList>
-          <TabsTrigger value="trips">Viagens</TabsTrigger>
-          <TabsTrigger value="freightBills">Freight Bills</TabsTrigger>
+      <h1 className="text-3xl font-extrabold text-gray-900 mb-6 border-b pb-2">Dashboard do Motorista</h1>
+
+      <Tabs defaultValue="trips" className="w-full">
+        <TabsList className="grid w-full grid-cols-2 bg-gray-200 rounded-lg p-1 mb-4">
+          <TabsTrigger
+            value="trips"
+            className="px-4 py-2 text-lg font-medium text-gray-700 data-[state=active]:bg-green-600 data-[state=active]:text-white rounded-md transition-colors duration-200"
+          >
+            Viagens
+          </TabsTrigger>
+          <TabsTrigger
+            value="freightBills"
+            className="px-4 py-2 text-lg font-medium text-gray-700 data-[state=active]:bg-green-600 data-[state=active]:text-white rounded-md transition-colors duration-200"
+          >
+            Cartas-Frete
+          </TabsTrigger>
         </TabsList>
 
-        <TabsContent value="trips">
+        <TabsContent value="trips" className="mt-4 p-4 bg-white rounded-lg shadow">
+          <h2 className="text-xl font-semibold mb-3 text-gray-800">Minhas Viagens</h2>
           {trips.length === 0 ? (
-            <p>Você não possui viagens registradas.</p>
+            <p className="text-gray-600">Você não possui viagens registradas.</p>
           ) : (
-            <table className="min-w-full text-sm border">
-              <thead className="bg-gray-100">
-                <tr>
-                  <th className="px-4 py-2 text-left">Origem</th>
-                  <th className="px-4 py-2 text-left">Destino</th>
-                  <th className="px-4 py-2 text-left">Status</th>
-                  <th className="px-4 py-2 text-left">Data</th>
-                </tr>
-              </thead>
-              <tbody>
-                {trips.map((trip) => (
-                  <tr key={trip.id} className="border-t hover:bg-gray-50">
-                    <td className="px-4 py-2">{trip.origin}</td>
-                    <td className="px-4 py-2">{trip.destination}</td>
-                    <td className="px-4 py-2 capitalize">{trip.status}</td>
-                    <td className="px-4 py-2">
-                      {new Date(trip.date).toLocaleDateString()}
-                    </td>
+            <div className="overflow-x-auto">
+              <table className="min-w-full text-sm border-collapse border border-gray-200 rounded-lg overflow-hidden">
+                <thead className="bg-green-100 text-gray-700 uppercase">
+                  <tr>
+                    <th className="px-4 py-3 text-left border-b border-gray-200">ID da Viagem</th>
+                    <th className="px-4 py-3 text-left border-b border-gray-200">Origem</th>
+                    <th className="px-4 py-3 text-left border-b border-gray-200">Destino</th>
+                    <th className="px-4 py-3 text-left border-b border-gray-200">Status</th>
+                    <th className="px-4 py-3 text-left border-b border-gray-200">Data</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {trips.map((trip) => (
+                    <tr key={trip.id} className="border-b border-gray-200 hover:bg-gray-50">
+                      <td className="px-4 py-3">{trip.id}</td>
+                      <td className="px-4 py-3">{trip.origin}</td>
+                      <td className="px-4 py-3">{trip.destination}</td>
+                      <td className="px-4 py-3 capitalize">
+                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                          trip.status === "completed" ? "bg-green-100 text-green-800" :
+                          trip.status === "in_progress" ? "bg-blue-100 text-blue-800" :
+                          trip.status === "scheduled" ? "bg-yellow-100 text-yellow-800" :
+                          "bg-red-100 text-red-800"
+                        }`}>
+                          {getTripStatusTranslation(trip.status)}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3">
+                        {new Date(trip.date).toLocaleDateString()}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           )}
         </TabsContent>
 
-        <TabsContent value="freightBills">
+        <TabsContent value="freightBills" className="mt-4 p-4 bg-white rounded-lg shadow">
+          <h2 className="text-xl font-semibold mb-3 text-gray-800">Minhas Cartas-Frete</h2>
           {freightBills.length === 0 ? (
-            <p>Você não possui cartas-frete registradas.</p>
+            <p className="text-gray-600">Você não possui cartas-frete registradas.</p>
           ) : (
-            <table className="min-w-full text-sm border">
-              <thead className="bg-gray-100">
-                <tr>
-                  <th className="px-4 py-2 text-left">Número</th>
-                  <th className="px-4 py-2 text-left">Valor</th>
-                  <th className="px-4 py-2 text-left">Status</th>
-                </tr>
-              </thead>
-              <tbody>
-                {freightBills.map((bill) => (
-                  <tr key={bill.id} className="border-t hover:bg-gray-50">
-                    <td className="px-4 py-2">{bill.initialValue}</td>
-                    <td className="px-4 py-2">
-                      R$ {bill.remainingValue.toFixed(2)}
-                    </td>
-                    <td className="px-4 py-2 capitalize">
-                      {bill.paymentStatus}
-                    </td>
+            <div className="overflow-x-auto">
+              <table className="min-w-full text-sm border-collapse border border-gray-200 rounded-lg overflow-hidden">
+                <thead className="bg-green-100 text-gray-700 uppercase">
+                  <tr>
+                    <th className="px-4 py-3 text-left border-b border-gray-200">ID da Carta-Frete</th>
+                    <th className="px-4 py-3 text-left border-b border-gray-200">Valor Inicial</th>
+                    <th className="px-4 py-3 text-left border-b border-gray-200">Valor Restante</th>
+                    <th className="px-4 py-3 text-left border-b border-gray-200">Status de Pagamento</th>
+                    <th className="px-4 py-3 text-left border-b border-gray-200">Notas</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {freightBills.map((bill) => (
+                    <tr key={bill.id} className="border-b border-gray-200 hover:bg-gray-50">
+                      <td className="px-4 py-3">{bill.id}</td>
+                      <td className="px-4 py-3">{formatCurrency(bill.initialValue)}</td>
+                      <td className="px-4 py-3">{formatCurrency(bill.remainingValue)}</td>
+                      <td className="px-4 py-3 capitalize">
+                          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                            bill.paymentStatus === "paid" ? "bg-green-100 text-green-800" :
+                            bill.paymentStatus === "pending" ? "bg-yellow-100 text-yellow-800" :
+                            "bg-red-100 text-red-800"
+                          }`}>
+                            {getFreightBillStatusTranslation(bill.paymentStatus)}
+                          </span>
+                      </td>
+                      <td className="px-4 py-3 text-gray-600 italic">
+                         {bill.notes || "Nenhuma nota."}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           )}
         </TabsContent>
       </Tabs>
