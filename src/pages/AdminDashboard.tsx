@@ -204,28 +204,6 @@ export default function AdminDashboard() {
               </button>
             </div>
           </div>
-
-          <div className="bg-white p-6 rounded-xl shadow-sm hover:shadow-md transition-all border border-green-50 hover:border-green-100">
-            <div className="flex flex-col h-full">
-              <div className="flex items-center mb-4">
-                <div className="bg-green-100 p-2 rounded-lg mr-3">
-                  <Settings className="w-6 h-6 text-green-700" />
-                </div>
-                <h3 className="text-lg font-semibold text-gray-800">
-                  Configurações
-                </h3>
-              </div>
-              <p className="text-gray-600 text-sm mb-5 flex-grow">
-                Configurações gerais do sistema e preferências.
-              </p>
-              <button
-                onClick={() => navigate("/admin/settings")}
-                className="self-start bg-gradient-to-r from-green-600 to-green-700 text-white px-4 py-2 rounded-lg hover:from-green-700 hover:to-green-800 transition-all text-sm"
-              >
-                Configurar
-              </button>
-            </div>
-          </div>
         </section>
 
         <section className="grid grid-cols-1 lg:grid-cols-3 gap-6 max-w-6xl mx-auto">
