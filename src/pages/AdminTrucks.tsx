@@ -14,7 +14,6 @@ import { decodeToken } from "@/utils/jwtDecode"; // Certifique-se de que esta im
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 
-
 // Re-declarando a interface Truck para garantir que o compilador TypeScript a veja
 // Se já estiver em um arquivo .d.ts ou similar, você pode remover esta redeclaração.
 type Truck = {
@@ -47,15 +46,12 @@ type TruckEdit = {
 export default function AdminTrucks() {
   const [trucks, setTrucks] = useState<Truck[]>([]);
   const [showForm, setShowForm] = useState(false);
-  // Estado para controlar a visibilidade do formulário de edição
   const [showEditForm, setShowEditForm] = useState(false);
-  // Estado para armazenar o caminhão que está sendo editado
   const [editingTruck, setEditingTruck] = useState<Truck | null>(null);
   const [expandedRows, setExpandedRows] = useState<Record<number, boolean>>({});
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
-  // Form state (para criação)
   const [form, setForm] = useState({
     licensePlate: "",
     brand: "",
@@ -69,8 +65,12 @@ export default function AdminTrucks() {
     status: "available" as "available" | "in_use" | "maintenance" | "inactive",
   });
 
-  // Estado para o formulário de edição, inicializado com os valores do caminhão
-  const [editForm, setEditForm] = useState<Omit<TruckEdit, 'id' | 'maintenanceDueDate' | 'insuranceExpiration'> & { maintenanceDueDate: Date | null, insuranceExpiration: Date | null }>({
+  const [editForm, setEditForm] = useState<
+    Omit<TruckEdit, "id" | "maintenanceDueDate" | "insuranceExpiration"> & {
+      maintenanceDueDate: Date | null;
+      insuranceExpiration: Date | null;
+    }
+  >({
     licensePlate: undefined,
     brand: undefined,
     model: undefined,
@@ -100,7 +100,6 @@ export default function AdminTrucks() {
       setTrucks(response.data as Truck[]);
     } catch (error) {
       console.error("Erro ao buscar caminhões:", error);
-      // Opcional: Adicionar um alerta para o usuário
       alert("Erro ao carregar a lista de caminhões. Tente novamente.");
     } finally {
       setLoading(false);
@@ -120,7 +119,7 @@ export default function AdminTrucks() {
       }
 
       const truckData = {
-        licensePlate: form.licensePlate, // Mapeamento correto
+        licensePlate: form.licensePlate,
         brand: form.brand,
         model: form.model,
         year: form.year,
@@ -139,7 +138,7 @@ export default function AdminTrucks() {
       setShowForm(false);
       resetForm();
       await fetchTrucks();
-      alert("Caminhão cadastrado com sucesso!"); // Feedback de sucesso
+      alert("Caminhão cadastrado com sucesso!");
     } catch (error) {
       console.error("Erro ao criar caminhão:", error);
       alert(
@@ -148,9 +147,8 @@ export default function AdminTrucks() {
     }
   };
 
-  // Nova função para atualizar caminhão
   const handleUpdateTruck = async () => {
-    if (!editingTruck) return; // Garante que há um caminhão em edição
+    if (!editingTruck) return;
 
     try {
       const token =
@@ -166,7 +164,6 @@ export default function AdminTrucks() {
         fuelType: editForm.fuelType,
         maxLoadCapacity: editForm.maxLoadCapacity,
         currentMileage: editForm.currentMileage,
-        // Converte Date para string ISO para API
         maintenanceDueDate: editForm.maintenanceDueDate?.toISOString(),
         insuranceExpiration: editForm.insuranceExpiration?.toISOString(),
         status: editForm.status,
@@ -176,10 +173,10 @@ export default function AdminTrucks() {
         headers: { Authorization: `Bearer ${token}` },
       });
 
-      setShowEditForm(false); // Fecha o formulário de edição
-      setEditingTruck(null); // Limpa o caminhão em edição
-      await fetchTrucks(); // Recarrega a lista de caminhões
-      alert("Caminhão atualizado com sucesso!"); // Feedback de sucesso
+      setShowEditForm(false);
+      setEditingTruck(null);
+      await fetchTrucks();
+      alert("Caminhão atualizado com sucesso!");
     } catch (error) {
       console.error("Erro ao atualizar caminhão:", error);
       alert("Ocorreu um erro ao atualizar o caminhão. Tente novamente.");
@@ -201,7 +198,7 @@ export default function AdminTrucks() {
       });
 
       await fetchTrucks();
-      alert("Caminhão excluído com sucesso!"); // Feedback de sucesso
+      alert("Caminhão excluído com sucesso!");
     } catch (error) {
       console.error("Erro ao excluir caminhão:", error);
       alert(
@@ -232,7 +229,6 @@ export default function AdminTrucks() {
     }));
   };
 
-  // Função para abrir o formulário de edição com os dados do caminhão
   const openEditForm = (truck: Truck) => {
     setEditingTruck(truck);
     setEditForm({
@@ -243,44 +239,52 @@ export default function AdminTrucks() {
       fuelType: truck.fuelType,
       maxLoadCapacity: truck.maxLoadCapacity,
       currentMileage: truck.currentMileage,
-      // Converte a string de data para objeto Date para o DatePicker
-      maintenanceDueDate: truck.maintenanceDueDate ? new Date(truck.maintenanceDueDate) : null,
-      insuranceExpiration: truck.insuranceExpiration ? new Date(truck.insuranceExpiration) : null,
+      maintenanceDueDate: truck.maintenanceDueDate
+        ? new Date(truck.maintenanceDueDate)
+        : null,
+      insuranceExpiration: truck.insuranceExpiration
+        ? new Date(truck.insuranceExpiration)
+        : null,
       status: truck.status,
     });
-    setShowEditForm(true); // Exibe o formulário de edição
-    setShowForm(false); // Garante que o formulário de criação esteja fechado
+    setShowEditForm(true);
+    setShowForm(false);
   };
 
-  // Função para fechar o formulário de edição
   const closeEditForm = () => {
     setShowEditForm(false);
-    setEditingTruck(null); // Limpa o caminhão em edição
+    setEditingTruck(null);
   };
 
-  // Handler genérico para inputs de texto/select do formulário de edição
-  const handleEditInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+  const handleEditInputChange = (
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
+    >
+  ) => {
     const { name, value } = e.target;
-    setEditForm(prev => ({
+    setEditForm((prev) => ({
       ...prev,
-      [name]: value
+      [name]: value,
     }));
   };
 
-  // Handler para inputs numéricos do formulário de edição
-  const handleEditNumberInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleEditNumberInputChange = (
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
     const { name, value } = e.target;
-    setEditForm(prev => ({
+    setEditForm((prev) => ({
       ...prev,
-      [name]: Number(value) || 0 // Garante que seja um número ou 0
+      [name]: Number(value) || 0,
     }));
   };
 
-  // Handler para DatePicker do formulário de edição
-  const handleEditDateChange = (date: Date | null, field: 'maintenanceDueDate' | 'insuranceExpiration') => {
-    setEditForm(prev => ({
+  const handleEditDateChange = (
+    date: Date | null,
+    field: "maintenanceDueDate" | "insuranceExpiration"
+  ) => {
+    setEditForm((prev) => ({
       ...prev,
-      [field]: date
+      [field]: date,
     }));
   };
 
@@ -318,7 +322,6 @@ export default function AdminTrucks() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-green-50 to-white p-6">
       <div className="max-w-6xl mx-auto">
-        {/* Header */}
         <div className="flex flex-col md:flex-row md:items-center justify-between mb-6 gap-4">
           <div className="flex items-center space-x-3">
             <Truck className="w-8 h-8 text-green-700" />
@@ -331,7 +334,7 @@ export default function AdminTrucks() {
             <button
               onClick={() => {
                 setShowForm(!showForm);
-                setShowEditForm(false); // Fecha o formulário de edição ao abrir o de criação
+                setShowEditForm(false);
               }}
               className="flex items-center px-4 py-2 text-sm font-medium bg-gradient-to-r from-green-600 to-green-700 text-white rounded-lg hover:from-green-700 hover:to-green-800"
             >
@@ -347,7 +350,6 @@ export default function AdminTrucks() {
           </div>
         </div>
 
-        {/* Formulário de Criação */}
         {showForm && (
           <div className="bg-white rounded-xl shadow-sm border border-green-100 p-6 mb-6">
             <h2 className="text-lg font-semibold mb-4 text-gray-800 flex items-center">
@@ -528,7 +530,6 @@ export default function AdminTrucks() {
           </div>
         )}
 
-        {/* Lista de Caminhões */}
         {loading ? (
           <div className="flex justify-center items-center h-64">
             <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-green-600"></div>
@@ -661,7 +662,7 @@ export default function AdminTrucks() {
                             <button
                               onClick={(e) => {
                                 e.stopPropagation();
-                                openEditForm(truck); // Abre o formulário de edição com os dados do caminhão
+                                openEditForm(truck);
                               }}
                               className="text-sm bg-blue-100 text-blue-700 px-3 py-1 rounded hover:bg-blue-200"
                             >
@@ -681,7 +682,6 @@ export default function AdminTrucks() {
                         </td>
                       </tr>
                     )}
-                    {/* Formulário de Edição aparece abaixo da linha expandida, se showEditForm for true e for o caminhão certo */}
                     {showEditForm && editingTruck?.id === truck.id && (
                       <tr className="bg-blue-50">
                         <td colSpan={5} className="p-6">
@@ -691,7 +691,13 @@ export default function AdminTrucks() {
                               Editando Caminhão: {editingTruck.licensePlate}
                             </h2>
 
-                            <form onSubmit={(e) => { e.preventDefault(); handleUpdateTruck(); }} className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                            <form
+                              onSubmit={(e) => {
+                                e.preventDefault();
+                                handleUpdateTruck();
+                              }}
+                              className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4"
+                            >
                               <div>
                                 <label className="block text-sm text-gray-600 mb-1">
                                   Placa *
@@ -699,7 +705,7 @@ export default function AdminTrucks() {
                                 <input
                                   className="w-full border border-gray-300 p-2 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                                   type="text"
-                                  name="licensePlate" // Importante: nome correspondente à propriedade do Truck
+                                  name="licensePlate"
                                   placeholder="AAA-0A00"
                                   value={editForm.licensePlate}
                                   onChange={handleEditInputChange}
@@ -735,7 +741,9 @@ export default function AdminTrucks() {
                               </div>
 
                               <div>
-                                <label className="block text-sm text-gray-600 mb-1">Ano</label>
+                                <label className="block text-sm text-gray-600 mb-1">
+                                  Ano
+                                </label>
                                 <input
                                   className="w-full border border-gray-300 p-2 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                                   type="number"
@@ -804,7 +812,9 @@ export default function AdminTrucks() {
                                 >
                                   <option value="available">Disponível</option>
                                   <option value="in_use">Em Uso</option>
-                                  <option value="maintenance">Manutenção</option>
+                                  <option value="maintenance">
+                                    Manutenção
+                                  </option>
                                   <option value="inactive">Inativo</option>
                                 </select>
                               </div>
@@ -815,7 +825,12 @@ export default function AdminTrucks() {
                                 </label>
                                 <DatePicker
                                   selected={editForm.maintenanceDueDate}
-                                  onChange={(date: Date | null) => handleEditDateChange(date, 'maintenanceDueDate')}
+                                  onChange={(date: Date | null) =>
+                                    handleEditDateChange(
+                                      date,
+                                      "maintenanceDueDate"
+                                    )
+                                  }
                                   dateFormat="dd/MM/yyyy"
                                   className="w-full border border-gray-300 p-2 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                                   placeholderText="Selecione a data"
@@ -829,7 +844,12 @@ export default function AdminTrucks() {
                                 </label>
                                 <DatePicker
                                   selected={editForm.insuranceExpiration}
-                                  onChange={(date: Date | null) => handleEditDateChange(date, 'insuranceExpiration')}
+                                  onChange={(date: Date | null) =>
+                                    handleEditDateChange(
+                                      date,
+                                      "insuranceExpiration"
+                                    )
+                                  }
                                   dateFormat="dd/MM/yyyy"
                                   className="w-full border border-gray-300 p-2 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                                   placeholderText="Selecione a data"
