@@ -1,10 +1,5 @@
 import { useEffect, useState } from "react";
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from "../components/ui/Tabs";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/Tabs";
 import apiClient from "@/services/api";
 import { decodeToken } from "@/utils/jwtDecode";
 
@@ -16,7 +11,7 @@ type Trip = {
   date: string;
 };
 
-type FreightBillStatus = "PENDING" | "PAID" | "CANCELLED";
+type FreightBillStatus = "pending" | "paid" | "cancelled";
 
 type FreightBill = {
   id: number;

@@ -64,20 +64,24 @@ export default function Login() {
   }, []);
 
   return (
-    <div className="min-h-screen flex flex-col bg-gray-50">
-      <header className="bg-blue-800 text-white p-4 shadow-md">
+    <div className="min-h-screen flex flex-col bg-gradient-to-b from-green-50 to-white">
+      <header className="bg-green-700 text-white p-4 shadow-md">
         <div className="container mx-auto flex items-center justify-between">
-          <div className="flex items-center space-x-2">
-            <Truck className="h-8 w-8" />
-            <span className="text-xl font-bold">TR Família Transportes</span>
+          <div className="flex items-center space-x-3">
+            <Truck className="h-8 w-8 text-orange-300" />
+            <span className="text-xl font-bold tracking-tight">
+              TR Família Transportes
+            </span>
           </div>
         </div>
       </header>
 
       <main className="flex-grow flex items-center justify-center p-4">
-        <div className="bg-white p-8 rounded-lg shadow-xl w-full max-w-md border border-gray-200">
+        <div className="bg-white p-8 rounded-2xl shadow-lg w-full max-w-md border border-green-100">
           <div className="flex justify-center mb-6">
-            <Truck className="h-12 w-12 text-blue-600" />
+            <div className="bg-green-100 p-4 rounded-full">
+              <Truck className="h-12 w-12 text-green-700" />
+            </div>
           </div>
           <h1 className="text-2xl font-bold mb-6 text-center text-gray-800">
             Acesse sua conta
@@ -116,7 +120,7 @@ export default function Login() {
                 type="email"
                 autoComplete="username"
                 placeholder="seu@email.com"
-                className={`w-full px-4 py-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition ${
+                className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none transition ${
                   errors.email ? "border-red-500" : "border-gray-300"
                 }`}
                 {...register("email", {
@@ -146,7 +150,7 @@ export default function Login() {
                 type="password"
                 autoComplete="current-password"
                 placeholder="••••••••"
-                className={`w-full px-4 py-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition ${
+                className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none transition ${
                   errors.password ? "border-red-500" : "border-gray-300"
                 }`}
                 {...register("password", {
@@ -169,7 +173,7 @@ export default function Login() {
                 <input
                   id="rememberMe"
                   type="checkbox"
-                  className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                  className="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded"
                   {...register("rememberMe")}
                 />
                 <label
@@ -179,17 +183,12 @@ export default function Login() {
                   Lembrar-me
                 </label>
               </div>
-              {/* 
-              <a href="#" className="text-sm text-blue-600 hover:text-blue-500">
-                Esqueceu a senha?
-              </a> 
-              */}
             </div>
 
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full flex justify-center items-center bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition disabled:opacity-70 disabled:cursor-not-allowed"
+              className="w-full flex justify-center items-center bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white font-medium py-2.5 px-4 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition-all disabled:opacity-70 disabled:cursor-not-allowed shadow-md hover:shadow-lg"
             >
               {isLoading ? (
                 <>
@@ -203,26 +202,19 @@ export default function Login() {
           </form>
 
           <div className="mt-6 text-center text-sm text-gray-500">
-            Bem-vindo(a) -{" "}
-            <a
-              href="#"
-              className="font-medium text-blue-600 hover:text-blue-500"
-            >
-              Precisa de ajuda?
-            </a>
+            Bem-vindo(a)
           </div>
         </div>
       </main>
 
-      <section className="mt-20 px-4 max-w-3xl mx-auto space-y-16">
-        {/* Sobre Nós */}
-        <div className="bg-white rounded-2xl shadow-lg p-8 border border-gray-200 hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
-          <h2 className="text-3xl font-bold text-center text-blue-800 mb-4">
+      <section className="mt-20 px-4 max-w-4xl mx-auto space-y-8">
+        <div className="bg-white rounded-2xl shadow-md p-8 border border-green-50 hover:shadow-lg hover:-translate-y-1 transition-all duration-300">
+          <h2 className="text-3xl font-bold text-center text-green-700 mb-4">
             Sobre Nós
           </h2>
-          <p className="text-gray-600 leading-relaxed text-base text-center">
+          <p className="text-gray-600 leading-relaxed text-center">
             A{" "}
-            <span className="font-semibold text-blue-800">
+            <span className="font-semibold text-green-700">
               TR Família Transportes
             </span>{" "}
             é uma empresa especializada em transporte rodoviário de cargas,
@@ -232,71 +224,110 @@ export default function Login() {
           </p>
         </div>
 
-        {/* Serviços */}
-        <div className="bg-white rounded-2xl shadow-lg p-8 border border-gray-200 hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
-          <h2 className="text-3xl font-bold text-center text-blue-800 mb-8">
+        <div className="bg-white rounded-2xl shadow-md p-8 border border-green-50 hover:shadow-lg hover:-translate-y-1 transition-all duration-300">
+          <h2 className="text-3xl font-bold text-center text-green-700 mb-8">
             Nossos Serviços
           </h2>
-          <div className="space-y-6">
-            <div className="p-6 bg-gray-50 rounded-lg shadow-md hover:shadow-lg hover:scale-[1.01] transition-all duration-300">
-              <h3 className="text-lg font-semibold text-gray-800 mb-1">
-                🚛 Transporte Rodoviário Nacional
+          <div className="grid md:grid-cols-3 gap-6">
+            <div className="p-5 bg-green-50 rounded-xl hover:shadow-md hover:scale-[1.02] transition-all duration-300 border border-green-100">
+              <h3 className="text-lg font-semibold text-gray-800 mb-2 flex items-center">
+                <span className="bg-orange-100 text-orange-600 p-2 rounded-full mr-3">
+                  🚛
+                </span>
+                Transporte Nacional
               </h3>
               <p className="text-gray-600 text-sm">
-                Realizamos entregas por todo o território nacional com rapidez,
-                segurança e rastreabilidade.
+                Entregas por todo o território nacional com rapidez, segurança e
+                rastreabilidade.
               </p>
             </div>
-            <div className="p-6 bg-gray-50 rounded-lg shadow-md hover:shadow-lg hover:scale-[1.01] transition-all duration-300">
-              <h3 className="text-lg font-semibold text-gray-800 mb-1">
-                📦 Logística e Armazenamento
+            <div className="p-5 bg-green-50 rounded-xl hover:shadow-md hover:scale-[1.02] transition-all duration-300 border border-green-100">
+              <h3 className="text-lg font-semibold text-gray-800 mb-2 flex items-center">
+                <span className="bg-orange-100 text-orange-600 p-2 rounded-full mr-3">
+                  📦
+                </span>
+                Logística
               </h3>
               <p className="text-gray-600 text-sm">
-                Gerenciamos todo o ciclo de armazenagem com estrutura adequada e
-                controle inteligente de estoque.
+                Armazenagem com estrutura adequada e controle inteligente de
+                estoque.
               </p>
             </div>
-            <div className="p-6 bg-gray-50 rounded-lg shadow-md hover:shadow-lg hover:scale-[1.01] transition-all duration-300">
-              <h3 className="text-lg font-semibold text-gray-800 mb-1">
-                🧾 Gestão de Entregas e Frotas
+            <div className="p-5 bg-green-50 rounded-xl hover:shadow-md hover:scale-[1.02] transition-all duration-300 border border-green-100">
+              <h3 className="text-lg font-semibold text-gray-800 mb-2 flex items-center">
+                <span className="bg-orange-100 text-orange-600 p-2 rounded-full mr-3">
+                  🧾
+                </span>
+                Gestão de Frotas
               </h3>
               <p className="text-gray-600 text-sm">
-                Otimização de rotas e monitoramento da frota para maior controle
-                e desempenho operacional.
+                Otimização de rotas e monitoramento para maior controle
+                operacional.
               </p>
             </div>
           </div>
         </div>
 
-        {/* Contato */}
-        <div className="bg-white rounded-2xl shadow-lg p-8 border border-gray-200 hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
-          <h2 className="text-3xl font-bold text-center text-blue-800 mb-4">
+        <div className="bg-white rounded-2xl shadow-md p-8 border border-green-50 hover:shadow-lg hover:-translate-y-1 transition-all duration-300">
+          <h2 className="text-3xl font-bold text-center text-green-700 mb-6">
             Fale Conosco
           </h2>
-          <p className="text-gray-600 text-center text-base">
-            E-mail:{" "}
-            <a
-              href="mailto:contato@trfamilycarrier.com"
-              className="text-blue-600 hover:underline"
-            >
-              contato@trfamilycarrier.com
-            </a>
-          </p>
-          <p className="text-gray-600 text-center mt-2 text-base">
-            WhatsApp:{" "}
-            <a
-              href="https://wa.me/5584999999999"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-blue-600 hover:underline"
-            >
-              (84) 99999-9999
-            </a>
-          </p>
+          <div className="flex flex-col md:flex-row justify-center gap-8">
+            <div className="flex flex-col items-center">
+              <div className="bg-orange-100 p-3 rounded-full mb-2">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-6 w-6 text-orange-600"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
+                  />
+                </svg>
+              </div>
+              <a
+                href="mailto:contato@trfamilycarrier.com"
+                className="text-green-600 hover:underline font-medium"
+              >
+                contato@trfamilycarrier.com
+              </a>
+            </div>
+            <div className="flex flex-col items-center">
+              <div className="bg-orange-100 p-3 rounded-full mb-2">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-6 w-6 text-orange-600"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"
+                  />
+                </svg>
+              </div>
+              <a
+                href="https://wa.me/5584999999999"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-green-600 hover:underline font-medium"
+              >
+                (84) 99999-9999
+              </a>
+            </div>
+          </div>
         </div>
       </section>
 
-      <footer className="bg-gray-100 p-4 text-center text-sm text-gray-600">
+      <footer className="bg-green-800 text-white p-4 text-center text-sm mt-12">
         © {new Date().getFullYear()} TR Família Transportes. Todos os direitos
         reservados.
       </footer>

@@ -4,8 +4,9 @@ import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
 import AdminDashboard from "./pages/AdminDashboard";
 import AdminUsers from "./pages/AdminUsers";
-import AdminOrders from "./pages/AdminOrders";
+import AdminTrips from "./pages/AdminTrips";
 import AdminReports from "./pages/AdminReports";
+import AdminTrucks from "./pages/AdminTrucks";
 
 export default function App() {
   return (
@@ -37,10 +38,18 @@ export default function App() {
         }
       />
       <Route
-        path="/admin/orders"
+        path="/admin/trips"
         element={
           <ProtectedRoute role="admin">
-            <AdminOrders />
+            <AdminTrips />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/admin/trucks"
+        element={
+          <ProtectedRoute role="admin">
+            <AdminTrucks />
           </ProtectedRoute>
         }
       />
