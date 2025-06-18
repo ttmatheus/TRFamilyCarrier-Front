@@ -84,7 +84,6 @@ export default function AdminUsers() {
       const res = await apiClient.get("/users", {
         headers: { Authorization: `Bearer ${token}` },
       });
-      console.log(res.data as UserType[]);
       setUsers(res.data as UserType[]);
     } catch (error) {
       console.error("Erro ao buscar usuários:", error);
@@ -102,7 +101,6 @@ export default function AdminUsers() {
       });
       setTrucks(res.data as TruckType[]);
 
-      console.log(res.data as TruckType[]);
     } catch (error) {
       console.error("Erro ao buscar caminhões:", error);
     }

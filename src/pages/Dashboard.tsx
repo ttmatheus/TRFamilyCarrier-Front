@@ -26,7 +26,7 @@ type Trip = {
   id: number;
   origin: string;
   destination: string;
-  departureTime: string;
+  date: string;
   arrivalTime: string;
   status: string;
   cargoDescription: string;
@@ -151,8 +151,8 @@ export default function DriverDashboard() {
           .filter((trip: Trip) => trip.status === "scheduled")
           .sort(
             (a: Trip, b: Trip) =>
-              new Date(a.departureTime).getTime() -
-              new Date(b.departureTime).getTime()
+              new Date(a.date).getTime() -
+              new Date(b.date).getTime()
           );
         setUpcomingTrips(upcoming);
       } catch (error) {
@@ -283,7 +283,7 @@ export default function DriverDashboard() {
                   <div>
                     <p className="text-sm text-gray-600">Saída</p>
                     <p className="font-medium">
-                      {formatDate(currentTrip.departureTime)}
+                      {formatDate(currentTrip.date)}
                     </p>
                   </div>
                   <div>
@@ -399,13 +399,17 @@ export default function DriverDashboard() {
                       <div>
                         <p className="text-sm text-gray-600">Data</p>
                         <p className="font-medium">
-                          {formatDate(trip.departureTime)}
+                          {formatDate(trip.date)}
                         </p>
                       </div>
                       <div>
                         <p className="text-sm text-gray-600">Status</p>
                         <p className="font-medium capitalize">
-                          {trip.status.replace("_", " ")}
+                          {trip.status === "scheduled" ? "Agendada" : (
+                            trip.status === "in_progress" ? "Em progresso" : (
+                              trip.status === "completed" ? "Completada" : "Cancelada"
+                            )
+                          )}
                         </p>
                       </div>
                     </div>

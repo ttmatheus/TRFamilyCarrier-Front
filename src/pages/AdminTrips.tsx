@@ -33,9 +33,7 @@ type Trip = {
   driver?: {
     name: string;
   };
-  truck?: {
-    licensePlate: string;
-  };
+  truckLicensePlate?: string;
 };
 
 type Driver = {
@@ -525,10 +523,10 @@ export default function AdminTrips() {
                                 Veículo
                               </h4>
                               <div className="space-y-1 text-sm text-gray-600">
-                                {trip.truck ? (
+                                {trip.truckLicensePlate ? (
                                   <p>
                                     <span className="font-medium">Placa:</span>{" "}
-                                    {trip.truck.licensePlate}
+                                    {trip.truckLicensePlate}
                                   </p>
                                 ) : (
                                   <p className="text-gray-400">

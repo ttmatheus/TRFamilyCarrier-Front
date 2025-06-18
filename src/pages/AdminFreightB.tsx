@@ -76,16 +76,24 @@ export default function AdminFreightBills() {
       if (!user?.id) throw new Error("Usuário não identificado");
 
       const [freightBillsRes, tripsRes] = await Promise.all([
-        apiClient.get(`/freightbill?user_id=${user.id}`, {
+        apiClient.get(`/freightbill/freightbills`, {
           headers: { Authorization: `Bearer ${token}` },
         }),
-        apiClient.get(`/trip?user_id=${user.id}`, {
+        apiClient.get(`/trip/trips`, {
           headers: { Authorization: `Bearer ${token}` },
         }),
       ]);
 
-      setFreightBills(freightBillsRes.data as FreightBill[]);
-      setTrips(tripsRes.data as Trip[]);
+      let freightBills = freightBillsRes.data as FreightBill[]
+      const trips = tripsRes.data as Trip[]
+
+      freightBills = freightBills.map(freightBill => {
+        freightBill.trip = trips.find(trip => trip.id === freightBill.tripId)
+        return freightBill;
+      });
+
+      setFreightBills(freightBills);
+      setTrips(trips);
     } catch (error) {
       console.error("Erro ao buscar dados:", error);
     } finally {
